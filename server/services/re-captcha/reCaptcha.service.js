@@ -24,5 +24,4 @@ export const check = (req, captcha, done) => {
         .catch((error) => done(error));
 };
 
-exports.check = check;
-
+export default check;
