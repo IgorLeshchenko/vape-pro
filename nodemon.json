@@ -1,0 +1,8 @@
+{
+    "verbose": true,
+    "delay": 1500,
+    "ignore": [ "*.test.js", "node_modules/*", "logs/*", "public/uploads/*" ],
+    "watch": [ "client", "server" ],
+    "ext": "js,json,jsx",
+    "exec": "babel-node"
+}

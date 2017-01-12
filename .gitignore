@@ -1,5 +1,6 @@
 .idea/
 logs/
+dist/
 node_modules/
 public/assets/
 public/uploads/**
