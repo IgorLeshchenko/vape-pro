@@ -47,4 +47,4 @@ userSchemaWithHandlers.methods.validPassword = function (password) {
     return compareSync(password, this.password);
 };
 
-module.exports = mongoose.model('User', userSchemaWithHandlers);
+export default mongoose.model('User', userSchemaWithHandlers);
