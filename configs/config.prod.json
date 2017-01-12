@@ -1,0 +1,20 @@
+{
+    "version": "0.0.5",
+    "mode": "production",
+    "server": {
+        "host": "localhost",
+        "port": 3000,
+        "reCaptcha": "6LcsegkUAAAAAJ709LPLEDRJtA81QK3eG57npY_2"
+    },
+    "client": {
+        "host": "vape-pro.com.ua",
+        "port": 80,
+        "reCaptcha": "6LcsegkUAAAAADnx8rQPuTN8BYDHITHLRCLoMlA8"
+    },
+    "mongoose": {
+        "uri": "mongodb://localhost/vape-pro"
+    },
+    "jwt": {
+        "secret": "722e0f8b0665ce8cc8cb5daff98e3dff"
+    }
+}

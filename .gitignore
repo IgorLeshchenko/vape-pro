@@ -1,0 +1,13 @@
+.idea/
+logs/
+node_modules/
+public/assets/
+public/uploads/**
+!public/uploads/default/
+configs/config.json
+
+.tmp
+.DS_Store
+
+npm-debug.log
+dump.rdb
