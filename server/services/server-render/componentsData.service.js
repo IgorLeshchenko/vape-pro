@@ -1,15 +1,15 @@
 'use strict';
 
 // Third Party imports:
-import { each } from 'lodash';
+import { each, keys } from 'lodash';
 
-const fetchComponentsData = (dispatch, components, params) => {
+export const fetchComponentsData = (dispatch, components, params) => {
     const promises = [];
 
     each(components, component => {
-        const keys = _.keys(component);
+        const componentKeys = keys(component);
 
-        each(keys, (key) => {
+        each(componentKeys, (key) => {
             const hasFetchMethod = component[key].hasOwnProperty('serverFetch');
 
             if (hasFetchMethod) {

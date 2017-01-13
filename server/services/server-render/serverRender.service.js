@@ -3,7 +3,7 @@
 // Third Party imports:
 import React from 'react'
 import { applyMiddleware, createStore, compose } from 'redux';
-import { ReduxRouter } from 'redux-router';
+import { RouterContext } from 'react-router';
 import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
@@ -11,6 +11,15 @@ import thunkMiddleware from 'redux-thunk';
 // App Imports:
 import { fetchComponentsData } from './componentsData.service';
 import combineReducers from '../../../client/store/combineReducers';
+
+export const isPageRequest = (req) => {
+    const { url } = req;
+    const hasFileExtension = url.split('.').length > 1;
+    const hasApiPrefix = url.indexOf('/api') !== -1;
+    const hasStaticPrefix = url.indexOf('/static') !== -1;
+
+    return !hasFileExtension && !hasApiPrefix && !hasStaticPrefix;
+};
 
 const getFullPageHTML = (html, state) => {
     return `
@@ -29,18 +38,18 @@ const getFullPageHTML = (html, state) => {
 
 export default (req, renderProps) => {
     const { components, params } = renderProps;
-    const finalCreateStore = compose(applyMiddleware(thunkMiddleware))(createStore);
-    const store = finalCreateStore(combineReducers);
+    const store = compose(
+        applyMiddleware(thunkMiddleware)
+    )(createStore)(combineReducers);
 
     return fetchComponentsData(store.dispatch, components, params)
         .then(() => {
             const initView = renderToString((
                 <Provider store={store}>
-				  <ReduxRouter />
+				  <RouterContext {...renderProps} />
 				</Provider>
             ));
 
             return getFullPageHTML(initView, store.getState());
-        })
-        .catch((error) => req.status(500).send({ error }));
+        });
 }

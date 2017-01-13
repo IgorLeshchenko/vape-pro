@@ -15,7 +15,7 @@ mongoose.Promise = bluebird;
 // CONNECTION EVENTS
 // When successfully connected
 mongoose.connection.on('connected', () => {
-    logger.info('Mongoose default connection open to ' + dbURI);
+    logger.info('Mongoose default connection open to ' + configs.mongoose.uri);
 });
 
 // If the connection throws an error
