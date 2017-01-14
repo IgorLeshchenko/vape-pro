@@ -11,7 +11,7 @@ class LandingPage extends Component {
     };
 
     render() {
-        return (<div>Landing mage</div>);
+        return (<div onClick={this.onClick}>Landing page</div>);
     }
 }
 

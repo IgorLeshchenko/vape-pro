@@ -29,8 +29,9 @@ const getFullPageHTML = (html, state) => {
             
           </head>
           <body>
-          <div class="container">${html}</div>
+          <div id="app-mount-point">${html}</div>
             <script>window.$REDUX_STATE = ${JSON.stringify(state)}</script>
+            <script src="/assets/app-bundle.js"></script>
           </body>
         </html>
     `;

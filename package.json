@@ -7,11 +7,11 @@
   "scripts": {
     "server:dev": "nodemon --config 'nodemon.json' server/server.js",
     "server:prod": "NODE_ENV=production babel server -d dist && node dist/server.js",
+    "ui:dev": "gulp build:dev",
+    "ui:prod": "NODE_ENV=production gulp build:prod",
     "db:start": "mongod --dbpath ~/work/mongo",
     "db:backup": "",
-    "db:restore": "",
-    "ui:build": "",
-    "ui:build:watch": ""
+    "db:restore": ""
   },
   "repository": {
     "type": "git",
@@ -78,6 +78,7 @@
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
+    "babelify": "^7.3.0",
     "browserify": "^13.3.0",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.1",

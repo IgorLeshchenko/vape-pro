@@ -5,15 +5,14 @@ import React from 'react'
 import { applyMiddleware, createStore, compose } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { render } from 'react-dom'
-import { reduxReactRouter, ReduxRouter } from 'redux-router';
-import { browserHistory } from 'react-router'
+import { Router, match, browserHistory as history } from 'react-router'
 import { Provider } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 
 // App imports:
 import configs from '../configs/config.json';
 import combineReducers from './store/combineReducers';
-import router from './router/router';
+import routes from './router/routes';
 
 const AppInitState = window.$REDUX_STATE || {};
 let store;
@@ -23,7 +22,6 @@ if (configs.mode === 'production') {
         combineReducers,
         AppInitState,
         compose(
-            reduxReactRouter({ router, browserHistory }),
             applyMiddleware(thunkMiddleware)
         )
     )
@@ -32,15 +30,16 @@ if (configs.mode === 'production') {
         combineReducers,
         AppInitState,
         composeWithDevTools(
-            reduxReactRouter({ router, browserHistory }),
             applyMiddleware(thunkMiddleware)
         )
     )
 }
 
-render(
-    <Provider store={store}>
-        <ReduxRouter />
-    </Provider>,
-    document.getElementById('app-mount-point')
-);
+match({ history, routes }, (error, redirectLocation, renderProps) => {
+    render(
+        <Provider store={store}>
+            <Router {...renderProps} />
+        </Provider>,
+        document.getElementById('app-mount-point')
+    );
+});
