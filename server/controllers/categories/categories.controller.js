@@ -3,26 +3,22 @@
 // Node imports:
 import sanitize from 'mongo-sanitize';
 import { ObjectId } from 'mongodb';
-import { isUndefined, isEmpty } from 'lodash';
+import { isUndefined, isEmpty, isNull, extend } from 'lodash';
 
 // App imports:
 import LoggerService from '../../services/common/logger.service';
 import CategoryModel from '../../models/category.model';
 import ImgModel from '../../models/img.model';
-import DirectoryModel from '../../models/directory.model'
+import DirectoryModel from '../../models/directory.model';
 
-const get = query => {
-    return CategoryModel
-        .findOne(query)
-        .populate('picture', 'id')
-        .populate('directory', 'id name')
-        .exec()
-        .then(category => {
-            return category ? category.toJSON() : {}
-        })
-        .catch(error => {
-            LoggerService.error('Category find error:', error, { query });
-        })
+const createObjectId = id => {
+    let itemId = null;
+
+    try {
+        itemId = new ObjectId(sanitize(id));
+    } catch(error) {};
+
+    return itemId
 };
 
 const isUnique = ({ _id, name, directory = {} }) => {
@@ -36,44 +32,82 @@ const isUnique = ({ _id, name, directory = {} }) => {
         return Promise.resolve(true);
     }
 
-    return get(query)
+    return CategoryModel.findOne(query)
         .then((category) => {
-            return isEmpty(category);
+            if (!isEmpty(category)) {
+                return Promise.reject(new Error('Category is not unique'));
+            }
+
+            return true;
+        });
+};
+
+const get = query => {
+    return CategoryModel
+        .findOne(query)
+        .populate('picture', 'id')
+        .populate('directory', 'id name')
+        .exec()
+        .then(category => {
+            if (!category) {
+                return Promise.reject(new Error('Failed to find category', { query }))
+            }
+
+            return category || {};
         })
-        .catch((err) => {
-            return { status: 500, msg: err }
-        })
+        .catch((error) => {
+            LoggerService.error('Failed to get category', error);
+            return Promise.reject(error);
+        });
 };
 
 export const getById = _id => {
+    const itemId = createObjectId(_id);
+
+    if (isNull(itemId)) {
+        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+    }
+
     return get({ _id: new ObjectId(sanitize(_id)) })
+        .then(category => category ? category.toJSON() : {});
 };
 
 export const getByPath = path => {
     return get({ path: sanitize(path) })
+        .then(category => category ? category.toJSON() : {});
 };
 
 export const create = data => {
     const { name, directory } = data;
-    const NewCategoryModel = new CategoryModel(data);
+    const ItemToCreate = new CategoryModel(data);
 
     return isUnique({ name, directory })
-        .then(isNameUnique => {
-            if (!isNameUnique) {
-                return Promise.reject({ status: 403, code: 'nuniq', msg: 'Name is not unique' });
-            }
-
-            return NewCategoryModel.save();
-        })
-        .then(category => {
-            return getById(category._id).then(category => {
-                return { data: category };
-            });
-        })
-        .catch(({ status = 500, code, msg = 'Server Error' }) => {
-            LoggerService.error('Category create error:', { status, code, msg });
-
-            return { status, code, msg };
+        .then(() => ItemToCreate.save())
+        .then(category => getById(category._id))
+        .catch(error => {
+            LoggerService.error('Failed to create category', error);
+            return Promise.reject(error);
         });
 };
 
+export const remove = id => {
+    const itemId = createObjectId(id);
+
+    if (isNull(itemId)) {
+        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+    }
+
+    return CategoryModel.findById(itemId)
+        .then(category => {
+            if (!category) {
+                return Promise.reject(new Error('Failed to find category'))
+            }
+
+            return extend(category, { isDeleted: true });
+        })
+        .then(category => category.save())
+        .catch(error => {
+            LoggerService.error('Failed to remove category', error, { itemId });
+            return Promise.reject(error);
+        });
+};

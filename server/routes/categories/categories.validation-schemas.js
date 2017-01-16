@@ -42,3 +42,10 @@ export const itemCreateSchema = {
         errorMessage: 'required'
     }
 };
+
+export const itemRemoveOrGetSchema = {
+    'id': {
+        notEmpty: true,
+        errorMessage: 'required'   
+    }
+};
