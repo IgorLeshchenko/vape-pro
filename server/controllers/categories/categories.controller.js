@@ -1,24 +1,19 @@
 `use strict`;
 
 // Node imports:
-import sanitize from 'mongo-sanitize';
-import { ObjectId } from 'mongodb';
 import { isUndefined, isEmpty, isNull, extend } from 'lodash';
 
 // App imports:
+import { castToObjectId, getQueryString } from '../../services/common/query-helpers.service';
 import LoggerService from '../../services/common/logger.service';
 import CategoryModel from '../../models/category.model';
 import ImgModel from '../../models/img.model';
 import DirectoryModel from '../../models/directory.model';
 
-const createObjectId = id => {
-    let itemId = null;
-
-    try {
-        itemId = new ObjectId(sanitize(id));
-    } catch(error) {};
-
-    return itemId
+const getDataToUpdate = data => {
+    return { 
+        name, path, index, directory, picture, description, seoKeywords, seoDescription, isActive 
+    } = data;
 };
 
 const isUnique = ({ _id, name, directory = {} }) => {
@@ -34,7 +29,7 @@ const isUnique = ({ _id, name, directory = {} }) => {
 
     return CategoryModel.findOne(query)
         .then((category) => {
-            if (!isEmpty(category)) {
+            if (category) {
                 return Promise.reject(new Error('Category is not unique'));
             }
 
@@ -42,9 +37,14 @@ const isUnique = ({ _id, name, directory = {} }) => {
         });
 };
 
-const get = query => {
-    return CategoryModel
-        .findOne(query)
+export const getById = _id => {
+    const itemId = castToObjectId(_id);
+
+    if (isNull(itemId)) {
+        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+    }
+
+    return CategoryModel.findById(itemId)
         .populate('picture', 'id')
         .populate('directory', 'id name')
         .exec()
@@ -52,37 +52,92 @@ const get = query => {
             if (!category) {
                 return Promise.reject(new Error('Failed to find category', { query }))
             }
+            
+            return category.toJSON();
+        });
+};
 
-            return category || {};
+export const getByPath = path => {
+    return CategoryModel.findOne({ path })
+        .populate('picture', 'id')
+        .populate('directory', 'id name')
+        .exec()
+        .then(category => {
+            if (!category) {
+                return Promise.reject(new Error('Failed to find category', { query }))
+            }
+            
+            return category.toJSON();
+        });
+};
+
+export const getList = data => {
+    const { page = 0, size = 0, sortBy = 'index', sortOrder = 'desc', filters = {} } = data;
+    const { query, status, directory } = filters;
+    let searchResultLimits = {};
+    let searchQuery = {
+        isDeleted: false,
+        $or: [ { name: getQueryString(query) } ]
+    };
+    let searchResultFields = [
+        'id', 'name', 'path', 'index', 'picture', 'directory', 'isActive'
+    ].join(' ');
+
+    if (!isUndefined(status) && status != 'all') {
+        searchQuery.isActive = status
+    }
+
+    if (!isUndefined(directory) && directory != 'all') {
+        searchQuery.directory = directory
+    }
+
+    if (!isUndefined(size) && size !== 0) {
+        const skipTo = parseInt(page, 10) * parseInt(size, 10);
+        const limitTo = parseInt(size, 10);
+
+        searchResultLimits = { 
+            skip: skipTo, 
+            limit: limitTo 
+        }
+    }
+
+    return CategoryModel.count(searchQuery)
+        .then(categoriesCount => {
+            if (categoriesCount === 0) {
+                return [];
+            }
+
+            return CategoryModel.find(searchQuery, searchResultFields, searchResultLimits)
+                .sort({ [sortBy]: sortOrder })
+                .populate('picture', 'id')
+                .populate('directory', 'id name')
+                .exec()
+                .then((categories) => {
+                    const pages = Math.floor(categoriesCount / (+size || 0)) || 0;
+
+                    return {
+                        items: categories,
+                        page: +page,
+                        size: +size,
+                        pages: +pages,
+                        total: +categoriesCount
+                    }
+                });
         })
-        .catch((error) => {
-            LoggerService.error('Failed to get category', error);
+        .catch(error => {
+            LoggerService.error('Failed to get categories list', error);
             return Promise.reject(error);
         });
 };
 
-export const getById = _id => {
-    const itemId = createObjectId(_id);
-
-    if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
-    }
-
-    return get({ _id: new ObjectId(sanitize(_id)) })
-        .then(category => category ? category.toJSON() : {});
-};
-
-export const getByPath = path => {
-    return get({ path: sanitize(path) })
-        .then(category => category ? category.toJSON() : {});
-};
-
 export const create = data => {
     const { name, directory } = data;
-    const ItemToCreate = new CategoryModel(data);
 
     return isUnique({ name, directory })
-        .then(() => ItemToCreate.save())
+        .then(() => {
+            return extend(new CategoryModel(), getDataToUpdate(data));
+        })
+        .then(category => category.save())
         .then(category => getById(category._id))
         .catch(error => {
             LoggerService.error('Failed to create category', error);
@@ -90,8 +145,33 @@ export const create = data => {
         });
 };
 
+export const update = (id, data) => {
+    const { name, directory } = data;
+    const itemId = castToObjectId(id);
+
+    if (isNull(itemId)) {
+        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+    }
+
+    return isUnique({ _id: itemId, name, directory })
+        .then(() => CategoryModel.findById(itemId))
+        .then(category => {
+            if (!category) {
+                return Promise.reject(new Error('Failed to find category'))
+            }
+
+            return extend(category, getDataToUpdate(data));
+        })
+        .then(category => category.save())
+        .then(() => getById(itemId))
+        .catch(error => {
+            LoggerService.error('Failed to update category', error);
+            return Promise.reject(error);
+        });
+};
+
 export const remove = id => {
-    const itemId = createObjectId(id);
+    const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
         return Promise.reject(new Error(`Failed to cast to ObjectId`));
@@ -100,10 +180,12 @@ export const remove = id => {
     return CategoryModel.findById(itemId)
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category'))
+                return Promise.reject(new Error('Failed to find category', { query }))
             }
 
-            return extend(category, { isDeleted: true });
+            return extend(category, { 
+                isDeleted: true 
+            });
         })
         .then(category => category.save())
         .catch(error => {

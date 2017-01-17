@@ -43,6 +43,8 @@ export const itemCreateSchema = {
     }
 };
 
+export const itemUpdateSchema = itemCreateSchema;
+
 export const itemRemoveOrGetSchema = {
     'id': {
         notEmpty: true,
