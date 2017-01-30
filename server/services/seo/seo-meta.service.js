@@ -27,7 +27,7 @@ export const getLandingPage = () => ([
     }
 ]);
 
-export const getContainerPage = (data) => {
+export const getContainerPage = data => {
     const { name, seoDescription } = data || {};
     const seoKeywords = name.split(' ').join(', ');
 
@@ -39,7 +39,7 @@ export const getContainerPage = (data) => {
     ];
 };
 
-export const getContainersPage = (data) => {
+export const getContainersPage = data => {
     const { name, seoDescription, seoKeywords } = data || {};
 
     return [

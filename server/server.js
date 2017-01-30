@@ -12,7 +12,6 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { match } from 'react-router';
 import path from 'path';
-import { isUndefined } from 'lodash';
 import nodeJSX from 'node-jsx';
 
 nodeJSX.install({ extension: '.jsx' });
@@ -22,15 +21,15 @@ import configs from '../configs/config.json';
 import Logger from './services/common/logger.service';
 import AuthService from './services/common/auth.service';
 import CorsService from './services/common/cors.service';
-import ServerRenderService, { isPageRequest } from './services/server-render/serverRender.service';
-import db from './services/db/mongoose'
+import ServerRenderService, { isPageRequest } from './services/server-render/serverRender.service'; // eslint-disable-next-line
+import db from './services/db/mongoose';
 import routes from '../client/router/routes';
 import serverRoutes from './routes';
 
 // eShop environment setup:
 const port = process.env.PORT || configs.server.port;
 const app = express();
-const appRedisStore = connectRedis(expressSession);
+const appRedisStore = connectRedis(expressSession); // eslint-disable-next-line
 const appAuth = AuthService(passport);
 
 global.navigator = global.navigator || {};
@@ -78,7 +77,7 @@ app.get('*', (req, res, next) => {
 
         ServerRenderService(req, renderProps)
             .then(page => res.status(200).send(page))
-            .catch(err => res.status(500).end(err.message) );
+            .catch(err => res.status(500).end(err.message));
     });
 });
 

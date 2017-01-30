@@ -48,6 +48,6 @@ export const itemUpdateSchema = itemCreateSchema;
 export const itemRemoveOrGetSchema = {
     'id': {
         notEmpty: true,
-        errorMessage: 'required'   
+        errorMessage: 'required'
     }
 };

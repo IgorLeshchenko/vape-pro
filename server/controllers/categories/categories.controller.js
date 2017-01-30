@@ -1,19 +1,17 @@
-`use strict`;
+'use strict';
 
 // Node imports:
-import { isUndefined, isEmpty, isNull, extend } from 'lodash';
+import { isUndefined, isNull, extend, pick } from 'lodash';
 
 // App imports:
 import { castToObjectId, getQueryString } from '../../services/common/query-helpers.service';
 import LoggerService from '../../services/common/logger.service';
 import CategoryModel from '../../models/category.model';
-import ImgModel from '../../models/img.model';
-import DirectoryModel from '../../models/directory.model';
 
 const getDataToUpdate = data => {
-    return { 
-        name, path, index, directory, picture, description, seoKeywords, seoDescription, isActive 
-    } = data;
+    return pick(data, [
+        'name', 'path', 'index', 'directory', 'picture', 'description', 'seoKeywords', 'seoDescription', 'isActive'
+    ]);
 };
 
 const isUnique = ({ _id, name, directory = {} }) => {
@@ -28,7 +26,7 @@ const isUnique = ({ _id, name, directory = {} }) => {
     }
 
     return CategoryModel.findOne(query)
-        .then((category) => {
+        .then(category => {
             if (category) {
                 return Promise.reject(new Error('Category is not unique'));
             }
@@ -50,9 +48,9 @@ export const getById = _id => {
         .exec()
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category', { query }))
+                return Promise.reject(new Error('Failed to find category', { _id }));
             }
-            
+
             return category.toJSON();
         });
 };
@@ -64,9 +62,9 @@ export const getByPath = path => {
         .exec()
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category', { query }))
+                return Promise.reject(new Error('Failed to find category', { path }));
             }
-            
+
             return category.toJSON();
         });
 };
@@ -74,37 +72,37 @@ export const getByPath = path => {
 export const getList = data => {
     const { page = 0, size = 0, sortBy = 'index', sortOrder = 'desc', filters = {} } = data;
     const { query, status, directory } = filters;
-    let searchResultLimits = {};
-    let searchQuery = {
+    const searchQuery = {
         isDeleted: false,
-        $or: [ { name: getQueryString(query) } ]
+        $or: [{ name: getQueryString(query) }]
     };
-    let searchResultFields = [
+    const searchResultFields = [
         'id', 'name', 'path', 'index', 'picture', 'directory', 'isActive'
     ].join(' ');
+    let searchResultLimits = {};
 
-    if (!isUndefined(status) && status != 'all') {
-        searchQuery.isActive = status
+    if (!isUndefined(status) && status !== 'all') {
+        searchQuery.isActive = status;
     }
 
-    if (!isUndefined(directory) && directory != 'all') {
-        searchQuery.directory = directory
+    if (!isUndefined(directory) && directory !== 'all') {
+        searchQuery.directory = directory;
     }
 
     if (!isUndefined(size) && size !== 0) {
         const skipTo = parseInt(page, 10) * parseInt(size, 10);
         const limitTo = parseInt(size, 10);
 
-        searchResultLimits = { 
-            skip: skipTo, 
-            limit: limitTo 
-        }
+        searchResultLimits = {
+            skip: skipTo,
+            limit: limitTo
+        };
     }
 
     return CategoryModel.count(searchQuery)
         .then(categoriesCount => {
             if (categoriesCount === 0) {
-                return [];
+                return {};
             }
 
             return CategoryModel.find(searchQuery, searchResultFields, searchResultLimits)
@@ -112,7 +110,7 @@ export const getList = data => {
                 .populate('picture', 'id')
                 .populate('directory', 'id name')
                 .exec()
-                .then((categories) => {
+                .then(categories => {
                     const pages = Math.floor(categoriesCount / (+size || 0)) || 0;
 
                     return {
@@ -121,7 +119,7 @@ export const getList = data => {
                         size: +size,
                         pages: +pages,
                         total: +categoriesCount
-                    }
+                    };
                 });
         })
         .catch(error => {
@@ -180,11 +178,11 @@ export const remove = id => {
     return CategoryModel.findById(itemId)
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category', { query }))
+                return Promise.reject(new Error('Failed to find category', { id }));
             }
 
-            return extend(category, { 
-                isDeleted: true 
+            return extend(category, {
+                isDeleted: true
             });
         })
         .then(category => category.save())

@@ -1,10 +1,10 @@
 'use strict';
 
 // Third Party imports:
-import React from 'react'
+import React from 'react';
 import { applyMiddleware, createStore, compose } from 'redux';
 import { RouterContext } from 'react-router';
-import { renderToString } from 'react-dom/server'
+import { renderToString } from 'react-dom/server';
 import { Provider } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 
@@ -12,7 +12,7 @@ import thunkMiddleware from 'redux-thunk';
 import { fetchComponentsData } from './componentsData.service';
 import combineReducers from '../../../client/store/combineReducers';
 
-export const isPageRequest = (req) => {
+export const isPageRequest = req => {
     const { url } = req;
     const hasFileExtension = url.split('.').length > 1;
     const hasApiPrefix = url.indexOf('/api') !== -1;
@@ -47,10 +47,10 @@ export default (req, renderProps) => {
         .then(() => {
             const initView = renderToString((
                 <Provider store={store}>
-				  <RouterContext {...renderProps} />
-				</Provider>
+                    <RouterContext {...renderProps} />
+                </Provider>
             ));
 
             return getFullPageHTML(initView, store.getState());
         });
-}
+};

@@ -1,4 +1,4 @@
-`use strict`;
+'use strict';
 
 // Node imports:
 import sanitize from 'mongo-sanitize';
@@ -13,7 +13,7 @@ export const getQueryString = q => {
         searchRegEx = new RegExp(sanitize(escape(q)), `gi`);
     }
 
-    return searchRegEx
+    return searchRegEx;
 };
 
 export const castToObjectId = id => {
@@ -21,7 +21,9 @@ export const castToObjectId = id => {
 
     try {
         itemId = new ObjectId(sanitize(id));
-    } catch(error) {};
+    } catch (error) {
+        itemId = null;
+    }
 
-    return itemId
+    return itemId;
 };

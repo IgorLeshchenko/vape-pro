@@ -22,7 +22,7 @@ const babelConfigs = {
         'es2015',
         'react'
     ],
-    'plugins': [ 'transform-class-properties' ]
+    'plugins': ['transform-class-properties']
 };
 
 const configs = {
@@ -34,7 +34,7 @@ const configs = {
     },
     scss: {
         src: './client/App.scss',
-        watch: [ './client/**/*.scss' ],
+        watch: ['./client/**/*.scss'],
         name: 'app-bundle.css',
         dest: 'public/assets/',
         imports: [
@@ -60,7 +60,7 @@ const getCSSBundle = () => {
         .resume();
 };
 
-const getJSBundle = (bundler) => {
+const getJSBundle = bundler => {
     const bundleConfig = configs.js;
     const bundleTimer = duration('JS Development bundle ready');
 
@@ -95,7 +95,7 @@ const getCSSProdBundle = () => {
         .resume();
 };
 
-const getJSProdBundle = (bundler) => {
+const getJSProdBundle = bundler => {
     const bundleConfig = configs.js;
     const bundleTimer = duration('JS Production bundle ready');
 

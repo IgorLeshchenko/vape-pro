@@ -1,8 +1,5 @@
 'use strict';
 
-// Third Party imports:
-import { each } from 'lodash';
-
 // App imports:
 import * as actionsTypes from './actions.enum';
 

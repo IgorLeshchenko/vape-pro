@@ -7,9 +7,9 @@ import LocalStrategy from 'passport-local';
 import UserModel from '../../models/user.model';
 
 const strategySetup = {
-    usernameField : 'email',
-    passwordField : 'password',
-    passReqToCallback : true
+    usernameField: 'email',
+    passwordField: 'password',
+    passReqToCallback: true
 };
 
 const serializeUser = (user, done) => {
@@ -18,11 +18,11 @@ const serializeUser = (user, done) => {
 
 const deSerializeUser = (id, done) => {
     UserModel.findById(id).exec()
-        .then((user) => done(null, user))
-        .catch((error) => done(error));
+        .then(user => done(null, user))
+        .catch(error => done(error));
 };
 
-export default (passport) => {
+export default passport => {
     passport.serializeUser(serializeUser);
     passport.deserializeUser(deSerializeUser);
 
@@ -30,17 +30,17 @@ export default (passport) => {
         const { role } = req.body;
 
         UserModel.findOne({ 'email': email, role }).exec()
-            .then((user) => {
+            .then(user => {
                 if (!user || !user.validPassword(password)) {
                     return done(null, false);
                 }
 
                 return done(null, user);
             })
-            .catch((error) => done(error, {}))
+            .catch(error => done(error, {}));
     }));
 
-    passport.use('local-signup', new LocalStrategy(strategySetup, (req, email, password, done) => {
+    passport.use('local-signup', new LocalStrategy(strategySetup, () => {
         // TODO :: Implement user sign up
     }));
 };

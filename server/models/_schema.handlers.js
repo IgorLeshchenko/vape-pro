@@ -12,11 +12,11 @@ const schemaOptions = {
     }
 };
 
-export default (schema) => {
-    const instance = new mongoose.Schema(schema, schemaOptions)
+export default schema => {
+    const instance = new mongoose.Schema(schema, schemaOptions);
 
     instance.pre('update', function() {
-        this.update({},{ $set: { updatedAt: new Date() } });
+        this.update({}, { $set: { updatedAt: new Date() } });
     });
 
     instance.pre('find', function() {

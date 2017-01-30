@@ -10,7 +10,7 @@ export const onError = (err, req, res, next) => {
     if (err) {
         logger.error(err.message);
 
-        each(err.errors, (cErr) => {
+        each(err.errors, cErr => {
             logger.error(cErr.message);
         });
     }

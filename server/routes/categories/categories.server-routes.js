@@ -3,7 +3,6 @@
 // Node imports:
 import express from 'express';
 import url from 'url';
-import { isUndefined, isEmpty } from 'lodash';
 
 // App imports:
 import * as CategoriesController from '../../controllers/categories/categories.controller';
@@ -16,7 +15,7 @@ router
         const params = url.parse(req.url, true);
         const { page, size, status, directory, query, sortBy, sortOrder } = params.query || {};
         const filters = { status, directory, query };
-        
+
         CategoriesController.getList({ page, size, sortBy, sortOrder, filters })
             .then(data => {
                 res.status(200).json(data);
@@ -53,7 +52,7 @@ router
             }
 
             CategoriesController.getById(id)
-                .then((data) => {
+                .then(data => {
                     res.status(200).json(data);
                 })
                 .catch(error => {
@@ -64,7 +63,7 @@ router
     .put('/categories/:id', (req, res) => {
         const { id } = req.params;
         const { body } = req;
-        
+
         req.checkParams(ValidationSchemas.itemUpdateSchema);
         req.getValidationResult().then(result => {
             if (!result.isEmpty()) {
@@ -90,7 +89,7 @@ router
             }
 
             CategoriesController.remove(id)
-                .then((result) => {
+                .then(() => {
                     res.status(200).json({});
                 })
                 .catch(error => {

@@ -8,9 +8,9 @@ import gm from 'gm';
 
 gm.subClass({ imageMagick: true });
 
-const cropSizes = [ 50, 150, 250, 500 ];
+const cropSizes = [50, 150, 250, 500];
 
-export const cropImageProcess = (data) => {
+export const cropImageProcess = data => {
     const { fileToCrop, folder, size, cropData } = data;
     const fileToSave = path.resolve(folder, `${size}.png`);
 
@@ -19,7 +19,7 @@ export const cropImageProcess = (data) => {
             .crop(cropData.width, cropData.height, cropData.x, cropData.y)
             .resize(size, size, '!')
             .noProfile()
-            .write(fileToSave, (err) => {
+            .write(fileToSave, err => {
                 if (err) {
                     return sbReject(err);
                 }
@@ -34,7 +34,7 @@ export const cropImage = (id, cropData, done) => {
     const fileToCrop = path.resolve(__base, `../public/uploads/${id}/original.png`);
     const cropPromise = [];
 
-    each(cropSizes, (size) => {
+    each(cropSizes, size => {
         cropPromise.push(
             cropImageProcess(fileToCrop, fileFolder, size, cropData)
         );
@@ -42,11 +42,11 @@ export const cropImage = (id, cropData, done) => {
 
     Promise.all(cropPromise)
         .then(() => done())
-        .catch((error) => done(error));
+        .catch(error => done(error));
 };
 
 export const checkFolderExists = (folder, done) => {
-    fs.ensureDir(folder, (err) => {
+    fs.ensureDir(folder, err => {
         if (err) {
             return done({ reqStatus: 500, msg: `Server Error`, nodeError: err });
         }
@@ -59,20 +59,20 @@ export const uploadImage = (file, id, done) => {
     const fileUploadFolder = path.resolve(__base, `../public/uploads/${id}`);
     const fileUploadPath = path.resolve(__base, `../public/uploads/${id}/original.png`);
 
-    if (!includes([ 'jpeg', 'jpg', 'png' ], last(file.name.split('.')))) {
+    if (!includes(['jpeg', 'jpg', 'png'], last(file.name.split('.')))) {
         return done({ message: `Unsupported file extension` });
     }
 
-    if (!includes([ 'image/jpeg', 'image/png' ], file.mimetype)) {
+    if (!includes(['image/jpeg', 'image/png'], file.mimetype)) {
         return done({ message: `Unsupported file type` });
     }
 
-    checkFolderExists(fileUploadFolder, (existanceError) => {
+    checkFolderExists(fileUploadFolder, existanceError => {
         if (existanceError) {
             return done(existanceError);
         }
 
-        file.mv(fileUploadPath, (uploadError) => {
+        file.mv(fileUploadPath, uploadError => {
             if (uploadError) {
                 return done({ message: `Server Error`, error: uploadError });
             }

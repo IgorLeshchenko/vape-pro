@@ -10,92 +10,77 @@ import { show as showToast } from '../../components/ui/toastr/toastr';
 import { validate } from '../../common/validation/user/user.validation';
 import * as actionsTypes from './actions.enum';
 
-export const reset = () => (dispatch) => {
+export const reset = () => dispatch => {
     dispatch({ type: actionsTypes.USER_RESET });
 };
 
-export const change = (data) => (dispatch) => {
+export const change = data => dispatch => {
     dispatch({ type: actionsTypes.USER_CHANGE, data });
 };
 
-export const updateValidation = (isValid, validation) => (dispatch) => {
+export const updateValidation = (isValid, validation) => dispatch => {
     dispatch({ type: actionsTypes.USER_VALIDATE, isValid, validation });
 };
 
-export const fetch = (id) => (dispatch) => {
+export const fetch = id => dispatch => {
     const apiLink = getApiLink(`/api/mgm/users/${id}`);
 
     dispatch({ type: actionsTypes.USER_FETCH });
 
     return isomorphicFetch(apiLink, { method: 'GET' })
-        .then((response) => {
+        .then(response => {
             const { status } = response;
 
             if (status !== 200) {
                 dispatch({ type: actionsTypes.USER_FETCH_FAILURE, error: {} });
-
-                return showToast({
-                    type: 'error', message: 'Не удалось загрузить данные пользователя'
-                });
+                return Promise.reject({ status });
             }
 
             return response.json();
         })
-        .then((data) => {
+        .then(data => {
             dispatch({ type: actionsTypes.USER_FETCH_SUCCESS, data });
 
             return data;
         })
-        .catch((error) => {
+        .catch(error => {
             dispatch({ type: actionsTypes.USER_FETCH_FAILURE, error });
-
-            return error;
+            return Promise.reject(error);
         });
 };
 
-export const create = (data) => (dispatch) => {
+export const create = data => dispatch => {
     const apiLink = getApiLink(`/api/mgm/users`);
     const validationResults = validate(data);
 
     if (!validationResults.isValid) {
-        showToast({
-            type: 'error', message: 'Форма не валидна'
-        });
-
         return dispatch(updateValidation(false, validationResults.errors));
     }
 
     dispatch({ type: actionsTypes.USER_CREATE });
 
     return isomorphicFetch(apiLink, { method: 'POST' })
-        .then((response) => {
-            const { status } = response;
+        .then(response => {
+            const { status, error } = response;
 
             if (status !== 200) {
                 dispatch({ type: actionsTypes.USER_CREATE_FAILURE, error: {} });
-
-                showToast({
-                    type: 'error', message: 'Не удалось создать пользователя'
-                });
-
-                return Promise.reject('User Create: Validation Failed');
+                return Promise.reject({ status, error });
             }
 
             return response.json();
         })
-        .then((data) => {
-            dispatch({ type: actionsTypes.USER_CREATE_SUCCESS, data });
-
-            return data;
+        .then(payload => {
+            dispatch({ type: actionsTypes.USER_CREATE_SUCCESS, data: payload });
+            return payload;
         })
-        .catch((error) => {
+        .catch(error => {
             dispatch({ type: actionsTypes.USER_CREATE_FAILURE, error });
-
-            return error;
+            return Promise.reject(error);
         });
 };
 
-export const update = (data) => (dispatch) => {
+export const update = data => dispatch => {
     const apiLink = getApiLink(`/api/mgm/users/${data._id}`);
     const validationResults = validate(data);
 
@@ -112,7 +97,7 @@ export const update = (data) => (dispatch) => {
     dispatch({ type: actionsTypes.USER_CREATE });
 
     return isomorphicFetch(apiLink, { method: 'PUT' })
-        .then((response) => {
+        .then(response => {
             const { status } = response;
 
             if (status !== 200) {
@@ -132,45 +117,38 @@ export const update = (data) => (dispatch) => {
 
             return response.json();
         })
-        .then((data) => {
-            dispatch({ type: actionsTypes.USER_UPDATE_SUCCESS, data });
-
-            return data;
+        .then(payload => {
+            dispatch({ type: actionsTypes.USER_UPDATE_SUCCESS, data: payload });
+            return payload;
         })
-        .catch((error) => {
+        .catch(error => {
             dispatch({ type: actionsTypes.USER_UPDATE_FAILURE, error });
-
-            return error;
+            return Promise.reject(error);
         });
 };
 
-export const remove = (id) => (dispatch) => {
+export const remove = id => dispatch => {
     const apiLink = getApiLink(`/api/mgm/users/${id}`);
 
     dispatch({ type: actionsTypes.USER_REMOVE });
 
     return isomorphicFetch(apiLink, { method: 'DELETE' })
-        .then((response) => {
+        .then(response => {
             const { status } = response;
 
             if (status !== 200) {
                 dispatch({ type: actionsTypes.USER_REMOVE_FAILURE, error: {} });
-
-                return showToast({
-                    type: 'error', message: 'Не удалось удалить пользователя'
-                });
+                return Promise.reject({ status });
             }
 
             return response.json();
         })
-        .then((data) => {
-            dispatch({ type: actionsTypes.USER_REMOVE_SUCCESS, data });
-
-            return data;
+        .then(payload => {
+            dispatch({ type: actionsTypes.USER_REMOVE_SUCCESS, data: payload });
+            return payload;
         })
-        .catch((error) => {
+        .catch(error => {
             dispatch({ type: actionsTypes.USER_REMOVE_FAILURE, error });
-
-            return error;
+            return Promise.reject(error);
         });
 };

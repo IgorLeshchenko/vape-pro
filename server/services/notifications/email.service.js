@@ -28,7 +28,7 @@ const sendEmail = (sendTo, subject, message, done) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            done(error)
+            done(error);
         } else {
             done(null, info.response);
         }

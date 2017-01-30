@@ -9,7 +9,7 @@ export const fetchComponentsData = (dispatch, components, params) => {
     each(components, component => {
         const componentKeys = keys(component);
 
-        each(componentKeys, (key) => {
+        each(componentKeys, key => {
             const hasFetchMethod = component[key].hasOwnProperty('serverFetch');
 
             if (hasFetchMethod) {

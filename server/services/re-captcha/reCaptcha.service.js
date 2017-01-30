@@ -14,14 +14,14 @@ export const check = (req, captcha, done) => {
     const requestLink = `https://www.google.com/recaptcha/api/siteverify?${params}`;
 
     isomorphicFetch(requestLink, { method: 'POST' })
-        .then((response) => {
+        .then(response => {
             if (response.status !== 200) {
                 return done(false);
             }
 
             return done(true);
         })
-        .catch((error) => done(error));
+        .catch(error => done(error));
 };
 
 export default check;

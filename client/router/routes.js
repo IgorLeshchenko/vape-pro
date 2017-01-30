@@ -2,7 +2,7 @@
 
 // Third Party imports:
 import React from 'react';
-import { Route, IndexRoute } from 'react-router'
+import { Route, IndexRoute } from 'react-router';
 
 // App imports:
 import App from '../App.jsx';
@@ -38,7 +38,5 @@ export default (
             components={{}} />
         <Route path="checkout"
             components={{}} />
-
-        {/*<Route path="*" components={{  }} />*/}
     </Route>
 );

@@ -8,7 +8,7 @@ import { getApiLink } from '../../common/helpers/httpLink.helper';
 import { show as showToast } from '../../components/ui/toastr/toastr';
 import * as actionsTypes from './actions.enum';
 
-const getRequestQuery = (data) => {
+const getRequestQuery = data => {
     const { page, size, query, sortBy, sortOrder, status, role } = data;
 
     return [
@@ -22,33 +22,26 @@ const getRequestQuery = (data) => {
     ].join('&');
 };
 
-export const fetch = (data) => dispatch => {
+export const fetch = data => dispatch => {
     const apiLink = getApiLink(`/api/mgm/users?${getRequestQuery(data)}`);
 
     dispatch({ type: actionsTypes.USERS_FETCH });
 
     return isomorphicFetch(apiLink, { method: 'GET' })
-        .then((response) => {
+        .then(response => {
             if (response.status !== 200) {
-                showToast({
-                    type: 'error', message: 'Не удалось загрузить список пользователей'
-                });
-
                 dispatch({ type: actionsTypes.USERS_FETCH_FAILURE, error: {} });
-
-                return {};
+                return Promise.reject({});
             }
 
             return response.json();
         })
-        .then((data) => {
-            dispatch({ type: actionsTypes.USERS_FETCH_SUCCESS, data });
-
-            return data;
+        .then(payload => {
+            dispatch({ type: actionsTypes.USERS_FETCH_SUCCESS, data: payload });
+            return payload;
         })
-        .catch((error) => {
+        .catch(error => {
             dispatch({ type: actionsTypes.USERS_FETCH_FAILURE, error });
-
-            return error;
+            return Promise.reject(error);
         });
 };
