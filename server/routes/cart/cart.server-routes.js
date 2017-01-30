@@ -2,20 +2,17 @@
 
 // Node imports:
 import express from 'express';
-import url from 'url';
 
 // App imports:
-import * as CategoriesController from '../../controllers/categories/categories.controller';
+import * as CartController from '../../controllers/cart/cart.controller';
 
 const router = express.Router();
 
 router
-    .get('/categories', (req, res) => {
-        const params = url.parse(req.url, true);
-        const { page, size, status, directory, query, sortBy, sortOrder } = params.query || {};
-        const filters = { status, directory, query };
+    .get('/cart', (req, res) => {
+        const { user = {}, sessionID } = req;
 
-        CategoriesController.getList({ page, size, sortBy, sortOrder, filters })
+        CartController.get(user.id, sessionID)
             .then(data => {
                 res.status(200).json(data);
             })
@@ -23,10 +20,10 @@ router
                 res.status(500).send({ message: error.message || 'Server Error' });
             });
     })
-    .post('/categories', (req, res) => {
-        const { body } = req;
+    .post('/cart/create-product', (req, res) => {
+        const { body, user = {}, sessionID } = req;
 
-        CategoriesController.create(body)
+        CartController.productCreate(user.id, sessionID, body)
             .then(data => {
                 res.status(200).json(data);
             })
@@ -34,10 +31,10 @@ router
                 res.status(500).send({ message: error.message || 'Server Error' });
             });
     })
-    .get('/categories/:id', (req, res) => {
-        const { id } = req.params;
+    .post('/cart/update-product', (req, res) => {
+        const { body, user = {}, sessionID } = req;
 
-        CategoriesController.getById(id)
+        CartController.productUpdate(user.id, sessionID, body)
             .then(data => {
                 res.status(200).json(data);
             })
@@ -45,11 +42,10 @@ router
                 res.status(500).send({ message: error.message || 'Server Error' });
             });
     })
-    .put('/categories/:id', (req, res) => {
-        const { id } = req.params;
-        const { body } = req;
+    .post('/cart/remove-product', (req, res) => {
+        const { body, user = {}, sessionID } = req;
 
-        CategoriesController.update(id, body)
+        CartController.productRemove(user.id, sessionID, body)
             .then(data => {
                 res.status(200).json(data);
             })
@@ -57,12 +53,12 @@ router
                 res.status(500).send({ message: error.message || 'Server Error' });
             });
     })
-    .delete('/categories/:id', (req, res) => {
-        const { id } = req.params;
+    .delete('/cart', (req, res) => {
+        const { user = {}, sessionID } = req;
 
-        CategoriesController.remove(id)
-            .then(() => {
-                res.status(200).json({});
+        CartController.remove(user.id, sessionID)
+            .then(data => {
+                res.status(200).json(data);
             })
             .catch(error => {
                 res.status(500).send({ message: error.message || 'Server Error' });
