@@ -155,13 +155,13 @@ export const update = (id, data) => {
         .then(() => CategoryModel.findById(itemId))
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category'))
+                return Promise.reject(new Error('Failed to find category'));
             }
 
             return extend(category, getDataToUpdate(data));
         })
         .then(category => category.save())
-        .then(() => getById(itemId))
+        .then(category => getById(category._id))
         .catch(error => {
             LoggerService.error('Failed to update category', error);
             return Promise.reject(error);

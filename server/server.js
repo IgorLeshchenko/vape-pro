@@ -52,7 +52,6 @@ app.use(expressFileUpload());
 app.use(expressSession({
     secret: 'vape-pro', resave: true, saveUninitialized: true, store: new appRedisStore()
 }));
-
 app.use(serveFavicon(__dirname + '/../public/images/favicon/favicon.ico'));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(serverRoutes);

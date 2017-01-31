@@ -8,30 +8,67 @@ import gm from 'gm';
 
 gm.subClass({ imageMagick: true });
 
-const cropSizes = [50, 150, 250, 500];
+// App Imports:
+import LoggerService from './logger.service';
 
-export const cropImageProcess = data => {
+const cropSizes = [50, 150, 250, 500];
+const trustedExtensions = ['jpeg', 'jpg', 'png'];
+const trustedFilesTypes = ['image/jpeg', 'image/png'];
+
+const checkFolderExists = folder => {
+    return new Promise((resolve, reject) => {
+        fs.ensureDir(folder, checkError => {
+            if (checkError) {
+                return reject(checkError);
+            }
+
+            return resolve();
+        });
+    });
+};
+
+const moveFileToFolder = (file, folder) => {
+    return new Promise((resolve, reject) => {
+        file.mv(folder, moveError => {
+            if (moveError) {
+                return reject(moveError);
+            }
+
+            return resolve();
+        });
+    });
+};
+
+const getFileFolderPath = id => {
+    return path.resolve(__base, `../public/uploads/${id}`);
+};
+
+const getFileOriginalPath = id => {
+    return path.resolve(__base, `../public/uploads/${id}/original.png`);
+};
+
+const cropImageProcess = data => {
     const { fileToCrop, folder, size, cropData } = data;
     const fileToSave = path.resolve(folder, `${size}.png`);
 
-    return new Promise((cbResolve, sbReject) => {
+    return new Promise((resolve, reject) => {
         gm(fileToCrop)
             .crop(cropData.width, cropData.height, cropData.x, cropData.y)
             .resize(size, size, '!')
             .noProfile()
             .write(fileToSave, err => {
                 if (err) {
-                    return sbReject(err);
+                    return reject(err);
                 }
 
-                cbResolve();
+                resolve();
             });
     });
 };
 
-export const cropImage = (id, cropData, done) => {
-    const fileFolder = path.resolve(__base, `../public/uploads/${id}`);
-    const fileToCrop = path.resolve(__base, `../public/uploads/${id}/original.png`);
+export const cropImage = (id, cropData) => {
+    const fileFolder = getFileFolderPath(id);
+    const fileToCrop = getFileOriginalPath(id);
     const cropPromise = [];
 
     each(cropSizes, size => {
@@ -40,44 +77,30 @@ export const cropImage = (id, cropData, done) => {
         );
     });
 
-    Promise.all(cropPromise)
-        .then(() => done())
-        .catch(error => done(error));
-};
-
-export const checkFolderExists = (folder, done) => {
-    fs.ensureDir(folder, err => {
-        if (err) {
-            return done({ reqStatus: 500, msg: `Server Error`, nodeError: err });
-        }
-
-        return done();
-    });
-};
-
-export const uploadImage = (file, id, done) => {
-    const fileUploadFolder = path.resolve(__base, `../public/uploads/${id}`);
-    const fileUploadPath = path.resolve(__base, `../public/uploads/${id}/original.png`);
-
-    if (!includes(['jpeg', 'jpg', 'png'], last(file.name.split('.')))) {
-        return done({ message: `Unsupported file extension` });
-    }
-
-    if (!includes(['image/jpeg', 'image/png'], file.mimetype)) {
-        return done({ message: `Unsupported file type` });
-    }
-
-    checkFolderExists(fileUploadFolder, existanceError => {
-        if (existanceError) {
-            return done(existanceError);
-        }
-
-        file.mv(fileUploadPath, uploadError => {
-            if (uploadError) {
-                return done({ message: `Server Error`, error: uploadError });
-            }
-
-            return done(null);
+    return Promise.all(cropPromise)
+        .catch(error => {
+            LoggerService.error('Failed to crop image', error);
+            return Promise.reject(error);
         });
-    });
+};
+
+export const uploadImage = (id, file) => {
+    const { name, mimetype } = file;
+    const fileUploadFolder = getFileFolderPath(id);
+    const fileUploadPath = getFileOriginalPath(id);
+
+    if (!includes(trustedExtensions, last(name.split('.')))) {
+        return Promise.reject(new Error(`Failed to upload image: Unsupported file extension`));
+    }
+
+    if (!includes(trustedFilesTypes, mimetype)) {
+        return Promise.reject(new Error(`Failed to upload image: Unsupported file type`));
+    }
+
+    return checkFolderExists(fileUploadFolder)
+        .then(() => moveFileToFolder(file, fileUploadPath))
+        .catch(error => {
+            LoggerService.error('Failed to upload image', error);
+            return Promise.reject(error);
+        });
 };
