@@ -2,7 +2,6 @@
 
 // Node imports:
 import { isUndefined, isNull, extend, pick } from 'lodash';
-import sanitize from 'mongo-sanitize';
 
 // App imports:
 import { castToObjectId, getQueryString } from '../../services/common/query-helpers.service';

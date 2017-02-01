@@ -45,6 +45,8 @@ export const getById = _id => {
     }
 
     return ManufacturerModel.findById(itemId)
+        .populate('picture', 'id')
+        .exec()
         .then(manufacturer => {
             if (!manufacturer) {
                 return Promise.reject(new Error('Failed to find manufacturer', { _id }));
@@ -58,6 +60,8 @@ export const getByPath = path => {
     const safePath = sanitize(path);
 
     return ManufacturerModel.findOne({ path: safePath })
+        .populate('picture', 'id')
+        .exec()
         .then(manufacturer => {
             if (!manufacturer) {
                 return Promise.reject(new Error('Failed to find manufacturer', { path }));
@@ -101,6 +105,7 @@ export const getList = data => {
 
             return ManufacturerModel.find(searchQuery, searchResultFields, searchResultLimits)
                 .sort({ [sortBy]: sortOrder })
+                .populate('picture', 'id')
                 .exec()
                 .then(manufacturers => {
                     const pages = Math.floor(manufacturersCount / (+size || 0)) || 0;
