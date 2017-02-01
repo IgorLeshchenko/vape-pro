@@ -7,11 +7,12 @@ import sanitize from 'mongo-sanitize';
 // App imports:
 import { castToObjectId, getQueryString } from '../../services/common/query-helpers.service';
 import LoggerService from '../../services/common/logger.service';
-import DirectoryModel from '../../models/directory.model';
+import ManufacturerModel from '../../models/manufacturer.model';
 
 const getDataToUpdate = data => {
     return pick(data, [
-        'name', 'path', 'index', 'isActive', 'seoKeywords', 'seoDescription'
+        'name', 'path', 'index', 'picture', 'country', 'website', 'description', 'seoKeywords', 'seoDescription', 
+        'isActive'
     ]);
 };
 
@@ -26,10 +27,10 @@ const isUnique = ({ _id, name }) => {
         return Promise.resolve(true);
     }
 
-    return DirectoryModel.findOne(query)
-        .then(directory => {
-            if (directory) {
-                return Promise.reject(new Error('Directory is not unique'));
+    return ManufacturerModel.findOne(query)
+        .then(manufacturer => {
+            if (manufacturer) {
+                return Promise.reject(new Error('Manufacturer is not unique'));
             }
 
             return true;
@@ -43,26 +44,26 @@ export const getById = _id => {
         return Promise.reject(new Error(`Failed to cast to ObjectId`));
     }
 
-    return DirectoryModel.findById(itemId)
-        .then(directory => {
-            if (!directory) {
-                return Promise.reject(new Error('Failed to find directory', { _id }));
+    return ManufacturerModel.findById(itemId)
+        .then(manufacturer => {
+            if (!manufacturer) {
+                return Promise.reject(new Error('Failed to find manufacturer', { _id }));
             }
 
-            return directory.toJSON();
+            return manufacturer.toJSON();
         });
 };
 
 export const getByPath = path => {
     const safePath = sanitize(path);
 
-    return DirectoryModel.findOne({ path: safePath })
-        .then(directory => {
-            if (!directory) {
-                return Promise.reject(new Error('Failed to find directory', { path }));
+    return ManufacturerModel.findOne({ path: safePath })
+        .then(manufacturer => {
+            if (!manufacturer) {
+                return Promise.reject(new Error('Failed to find manufacturer', { path }));
             }
 
-            return directory.toJSON();
+            return manufacturer.toJSON();
         });
 };
 
@@ -74,7 +75,7 @@ export const getList = data => {
         $or: [{ name: getQueryString(query) }]
     };
     const searchResultFields = [
-        'id', 'name', 'path', 'index', 'isActive', 'seoDescription', 'seoKeywords'
+        'id', 'name', 'path', 'index', 'picture', 'isActive'
     ].join(' ');
     let searchResultLimits = {};
 
@@ -92,29 +93,29 @@ export const getList = data => {
         };
     }
 
-    return DirectoryModel.count(searchQuery)
-        .then(directoriesCount => {
-            if (directoriesCount === 0) {
+    return ManufacturerModel.count(searchQuery)
+        .then(manufacturersCount => {
+            if (manufacturersCount === 0) {
                 return {};
             }
 
-            return DirectoryModel.find(searchQuery, searchResultFields, searchResultLimits)
+            return ManufacturerModel.find(searchQuery, searchResultFields, searchResultLimits)
                 .sort({ [sortBy]: sortOrder })
                 .exec()
-                .then(directories => {
-                    const pages = Math.floor(directoriesCount / (+size || 0)) || 0;
+                .then(manufacturers => {
+                    const pages = Math.floor(manufacturersCount / (+size || 0)) || 0;
 
                     return {
-                        items: directories,
+                        items: manufacturers,
                         page: +page,
                         size: +size,
                         pages: +pages,
-                        total: +directoriesCount
+                        total: +manufacturersCount
                     };
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get directories list', error);
+            LoggerService.error('Failed to get manufacturers list', error);
             return Promise.reject(error);
         });
 };
@@ -124,12 +125,12 @@ export const create = data => {
 
     return isUnique({ name })
         .then(() => {
-            return extend(new DirectoryModel(), getDataToUpdate(data));
+            return extend(new ManufacturerModel(), getDataToUpdate(data));
         })
-        .then(directory => directory.save())
-        .then(directory => getById(directory._id))
+        .then(manufacturer => manufacturer.save())
+        .then(manufacturer => getById(manufacturer._id))
         .catch(error => {
-            LoggerService.error('Failed to create directory', error);
+            LoggerService.error('Failed to create manufacturer', error);
             return Promise.reject(error);
         });
 };
@@ -143,18 +144,18 @@ export const update = (id, data) => {
     }
 
     return isUnique({ _id: itemId, name })
-        .then(() => DirectoryModel.findById(itemId))
-        .then(directory => {
-            if (!directory) {
-                return Promise.reject(new Error('Failed to find directory'));
+        .then(() => ManufacturerModel.findById(itemId))
+        .then(manufacturer => {
+            if (!manufacturer) {
+                return Promise.reject(new Error('Failed to find manufacturer'));
             }
 
-            return extend(directory, getDataToUpdate(data));
+            return extend(manufacturer, getDataToUpdate(data));
         })
-        .then(directory => directory.save())
-        .then(directory => getById(directory._id))
+        .then(manufacturer => manufacturer.save())
+        .then(manufacturer => getById(manufacturer._id))
         .catch(error => {
-            LoggerService.error('Failed to update directory', error);
+            LoggerService.error('Failed to update manufacturer', error);
             return Promise.reject(error);
         });
 };
@@ -166,19 +167,19 @@ export const remove = id => {
         return Promise.reject(new Error(`Failed to cast to ObjectId`));
     }
 
-    return DirectoryModel.findById(itemId)
-        .then(directory => {
-            if (!directory) {
-                return Promise.reject(new Error('Failed to find directory', { id }));
+    return ManufacturerModel.findById(itemId)
+        .then(manufacturer => {
+            if (!manufacturer) {
+                return Promise.reject(new Error('Failed to find manufacturer', { id }));
             }
 
-            return extend(directory, {
+            return extend(manufacturer, {
                 isDeleted: true
             });
         })
-        .then(directory => directory.save())
+        .then(manufacturer => manufacturer.save())
         .catch(error => {
-            LoggerService.error('Failed to remove directory', error, { id });
+            LoggerService.error('Failed to remove manufacturer', error, { id });
             return Promise.reject(error);
         });
 };
