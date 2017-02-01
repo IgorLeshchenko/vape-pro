@@ -1,0 +1,7 @@
+{
+    "verbose": false,
+    "ignore": [ "*.test.js", "node_modules/*", "logs/*", "public/uploads/*" ],
+    "watch": [],
+    "ext": "js,json,jsx",
+    "exec": "babel-node"
+}
