@@ -1,0 +1,10 @@
+- Migrate controllers
+- Migrate routes
+- Attach authorizations handlers
+- Test all routes with postman
+- Migrate actions and reducers
+- Migrate common components
+- Create bootstrap for shop pages for data retrieving from server (server render)
+- Create seo support for each page
+- Create routes for all shop pages
+-

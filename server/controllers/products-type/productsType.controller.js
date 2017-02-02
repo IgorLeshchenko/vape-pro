@@ -7,12 +7,11 @@ import sanitize from 'mongo-sanitize';
 // App imports:
 import { castToObjectId, getQueryString } from '../../services/common/query-helpers.service';
 import LoggerService from '../../services/common/logger.service';
-import ProductModel from '../../models/product.model';
+import ProductTypeModel from '../../models/product-type.model';
 
 const getDataToUpdate = data => {
     return pick(data, [
-        'name', 'type', 'price', 'amountAvailable', 'amountSold', 'amountBought', 'gallery', 'characteristics',
-        'isActive'
+        'name', 'characteristics', 'isActive'
     ]);
 };
 
@@ -27,10 +26,10 @@ const isUnique = ({ _id, name }) => {
         return Promise.resolve(true);
     }
 
-    return ProductModel.findOne(query)
-        .then(product => {
-            if (product) {
-                return Promise.reject(new Error('Product is not unique'));
+    return ProductTypeModel.findOne(query)
+        .then(productType => {
+            if (productType) {
+                return Promise.reject(new Error('Product Type is not unique'));
             }
 
             return true;
@@ -44,36 +43,30 @@ export const getById = _id => {
         return Promise.reject(new Error(`Failed to cast to ObjectId`, { _id }));
     }
 
-    return ProductModel.findById(itemId)
-        .populate(`gallery`, `id`)
-        .populate(`type`, `id name`)
-        .exec()
-        .then(product => {
-            if (!product) {
-                return Promise.reject(new Error('Failed to find product', { _id }));
+    return ProductTypeModel.findById(itemId)
+        .then(productType => {
+            if (!productType) {
+                return Promise.reject(new Error('Failed to find product type', { _id }));
             }
 
-            return product.toJSON();
+            return productType.toJSON();
         });
 };
 
 export const getList = data => {
     const { page = 0, size = 0, sortBy = 'name', sortOrder = 'asc', filters = {} } = data;
-    const { query, status, type } = filters;
+    const { query, status } = filters;
     const searchQuery = {
         isDeleted: false,
         $or: [{ name: getQueryString(query) }]
     };
     const searchResultFields = [
-        `id`, `name`, `type`, `gallery`, `price`, `amountAvailable`, `amountSold`, `isActive`
+        `id`, `name`, `characteristics`, `isActive`
     ].join(' ');
     let searchResultLimits = {};
 
     if (!isUndefined(status) && status !== 'all') {
         searchQuery.isActive = sanitize(status);
-    }
-    if (!isUndefined(type) && type !== 'all') {
-        searchQuery.type = sanitize(type);
     }
 
     if (!isUndefined(size) && size !== 0) {
@@ -86,31 +79,29 @@ export const getList = data => {
         };
     }
 
-    return ProductModel.count(searchQuery)
-        .then(productsCount => {
-            if (productsCount === 0) {
+    return ProductTypeModel.count(searchQuery)
+        .then(productsTypeCount => {
+            if (productsTypeCount === 0) {
                 return {};
             }
 
-            return ProductModel.find(searchQuery, searchResultFields, searchResultLimits)
+            return ProductTypeModel.find(searchQuery, searchResultFields, searchResultLimits)
                 .sort({ [sortBy]: sortOrder })
-                .populate(`gallery`, `id`)
-                .populate(`type`, `id name`)
                 .exec()
-                .then(products => {
-                    const pages = Math.floor(productsCount / (+size || 0)) || 0;
+                .then(productsTypes => {
+                    const pages = Math.floor(productsTypeCount / (+size || 0)) || 0;
 
                     return {
-                        items: products,
+                        items: productsTypes,
                         page: +page,
                         size: +size,
                         pages: +pages,
-                        total: +productsCount
+                        total: +productsTypeCount
                     };
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get products list', error);
+            LoggerService.error('Failed to get products types list', error);
             return Promise.reject(error);
         });
 };
@@ -120,12 +111,12 @@ export const create = data => {
 
     return isUnique({ name })
         .then(() => {
-            return extend(new ProductModel(), getDataToUpdate(data));
+            return extend(new ProductTypeModel(), getDataToUpdate(data));
         })
-        .then(product => product.save())
-        .then(product => getById(product._id))
+        .then(productType => productType.save())
+        .then(productType => getById(productType._id))
         .catch(error => {
-            LoggerService.error('Failed to create product', error);
+            LoggerService.error('Failed to create product type', error);
             return Promise.reject(error);
         });
 };
@@ -139,18 +130,18 @@ export const update = (id, data) => {
     }
 
     return isUnique({ _id: itemId, name })
-        .then(() => ProductModel.findById(itemId))
-        .then(product => {
-            if (!product) {
-                return Promise.reject(new Error('Failed to find product'));
+        .then(() => ProductTypeModel.findById(itemId))
+        .then(productType => {
+            if (!productType) {
+                return Promise.reject(new Error('Failed to find product type'));
             }
 
-            return extend(product, getDataToUpdate(data));
+            return extend(productType, getDataToUpdate(data));
         })
-        .then(product => product.save())
-        .then(product => getById(product._id))
+        .then(productType => productType.save())
+        .then(productType => getById(productType._id))
         .catch(error => {
-            LoggerService.error('Failed to update product', error);
+            LoggerService.error('Failed to update product type', error);
             return Promise.reject(error);
         });
 };
@@ -162,19 +153,19 @@ export const remove = id => {
         return Promise.reject(new Error(`Failed to cast to ObjectId`));
     }
 
-    return ProductModel.findById(itemId)
-        .then(product => {
-            if (!product) {
-                return Promise.reject(new Error('Failed to find product', { id }));
+    return ProductTypeModel.findById(itemId)
+        .then(productType => {
+            if (!productType) {
+                return Promise.reject(new Error('Failed to find product type', { id }));
             }
 
-            return extend(product, {
+            return extend(productType, {
                 isDeleted: true
             });
         })
-        .then(product => product.save())
+        .then(productType => productType.save())
         .catch(error => {
-            LoggerService.error('Failed to remove product', error, { id });
+            LoggerService.error('Failed to remove product type', error, { id });
             return Promise.reject(error);
         });
 };

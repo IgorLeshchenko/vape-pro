@@ -7,12 +7,11 @@ import sanitize from 'mongo-sanitize';
 // App imports:
 import { castToObjectId, getQueryString } from '../../services/common/query-helpers.service';
 import LoggerService from '../../services/common/logger.service';
-import ProductModel from '../../models/product.model';
+import ShippingModel from '../../models/shipping.model';
 
 const getDataToUpdate = data => {
     return pick(data, [
-        'name', 'type', 'price', 'amountAvailable', 'amountSold', 'amountBought', 'gallery', 'characteristics',
-        'isActive'
+        'name', 'description', 'payments', 'isActive'
     ]);
 };
 
@@ -27,10 +26,10 @@ const isUnique = ({ _id, name }) => {
         return Promise.resolve(true);
     }
 
-    return ProductModel.findOne(query)
-        .then(product => {
-            if (product) {
-                return Promise.reject(new Error('Product is not unique'));
+    return ShippingModel.findOne(query)
+        .then(shipping => {
+            if (shipping) {
+                return Promise.reject(new Error('Shipping is not unique'));
             }
 
             return true;
@@ -44,36 +43,32 @@ export const getById = _id => {
         return Promise.reject(new Error(`Failed to cast to ObjectId`, { _id }));
     }
 
-    return ProductModel.findById(itemId)
-        .populate(`gallery`, `id`)
-        .populate(`type`, `id name`)
+    return ShippingModel.findById(itemId)
+        .populate('payments', 'id name type')
         .exec()
-        .then(product => {
-            if (!product) {
-                return Promise.reject(new Error('Failed to find product', { _id }));
+        .then(shipping => {
+            if (!shipping) {
+                return Promise.reject(new Error('Failed to find shipping', { _id }));
             }
 
-            return product.toJSON();
+            return shipping.toJSON();
         });
 };
 
 export const getList = data => {
     const { page = 0, size = 0, sortBy = 'name', sortOrder = 'asc', filters = {} } = data;
-    const { query, status, type } = filters;
+    const { query, status } = filters;
     const searchQuery = {
         isDeleted: false,
         $or: [{ name: getQueryString(query) }]
     };
     const searchResultFields = [
-        `id`, `name`, `type`, `gallery`, `price`, `amountAvailable`, `amountSold`, `isActive`
+        'id', 'name', 'type', 'price', 'isActive', 'payments'
     ].join(' ');
     let searchResultLimits = {};
 
     if (!isUndefined(status) && status !== 'all') {
         searchQuery.isActive = sanitize(status);
-    }
-    if (!isUndefined(type) && type !== 'all') {
-        searchQuery.type = sanitize(type);
     }
 
     if (!isUndefined(size) && size !== 0) {
@@ -86,31 +81,30 @@ export const getList = data => {
         };
     }
 
-    return ProductModel.count(searchQuery)
-        .then(productsCount => {
-            if (productsCount === 0) {
+    return ShippingModel.count(searchQuery)
+        .then(shippingsCount => {
+            if (shippingsCount === 0) {
                 return {};
             }
 
-            return ProductModel.find(searchQuery, searchResultFields, searchResultLimits)
+            return ShippingModel.find(searchQuery, searchResultFields, searchResultLimits)
                 .sort({ [sortBy]: sortOrder })
-                .populate(`gallery`, `id`)
-                .populate(`type`, `id name`)
+                .populate('payments', 'id name type')
                 .exec()
-                .then(products => {
-                    const pages = Math.floor(productsCount / (+size || 0)) || 0;
+                .then(shippings => {
+                    const pages = Math.floor(shippingsCount / (+size || 0)) || 0;
 
                     return {
-                        items: products,
+                        items: shippings,
                         page: +page,
                         size: +size,
                         pages: +pages,
-                        total: +productsCount
+                        total: +shippingsCount
                     };
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get products list', error);
+            LoggerService.error('Failed to get shippings list', error);
             return Promise.reject(error);
         });
 };
@@ -120,12 +114,12 @@ export const create = data => {
 
     return isUnique({ name })
         .then(() => {
-            return extend(new ProductModel(), getDataToUpdate(data));
+            return extend(new ShippingModel(), getDataToUpdate(data));
         })
-        .then(product => product.save())
-        .then(product => getById(product._id))
+        .then(shipping => shipping.save())
+        .then(shipping => getById(shipping._id))
         .catch(error => {
-            LoggerService.error('Failed to create product', error);
+            LoggerService.error('Failed to create shipping', error);
             return Promise.reject(error);
         });
 };
@@ -139,18 +133,18 @@ export const update = (id, data) => {
     }
 
     return isUnique({ _id: itemId, name })
-        .then(() => ProductModel.findById(itemId))
-        .then(product => {
-            if (!product) {
-                return Promise.reject(new Error('Failed to find product'));
+        .then(() => ShippingModel.findById(itemId))
+        .then(shipping => {
+            if (!shipping) {
+                return Promise.reject(new Error('Failed to find shipping'));
             }
 
-            return extend(product, getDataToUpdate(data));
+            return extend(shipping, getDataToUpdate(data));
         })
-        .then(product => product.save())
-        .then(product => getById(product._id))
+        .then(shipping => shipping.save())
+        .then(shipping => getById(shipping._id))
         .catch(error => {
-            LoggerService.error('Failed to update product', error);
+            LoggerService.error('Failed to update shipping', error);
             return Promise.reject(error);
         });
 };
@@ -162,19 +156,19 @@ export const remove = id => {
         return Promise.reject(new Error(`Failed to cast to ObjectId`));
     }
 
-    return ProductModel.findById(itemId)
-        .then(product => {
-            if (!product) {
-                return Promise.reject(new Error('Failed to find product', { id }));
+    return ShippingModel.findById(itemId)
+        .then(shipping => {
+            if (!shipping) {
+                return Promise.reject(new Error('Failed to find shipping', { id }));
             }
 
-            return extend(product, {
+            return extend(shipping, {
                 isDeleted: true
             });
         })
-        .then(product => product.save())
+        .then(shipping => shipping.save())
         .catch(error => {
-            LoggerService.error('Failed to remove product', error, { id });
+            LoggerService.error('Failed to remove shipping', error, { id });
             return Promise.reject(error);
         });
 };
