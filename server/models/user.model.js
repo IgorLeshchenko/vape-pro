@@ -14,7 +14,7 @@ export const schema = {
     lastName: String,
     phone: String,
     role: {
-        type: String, required: true, enum: [ `customer`, `admin`, `supplier` ], default: 'customer'
+        type: String, required: true, enum: ['customer', 'admin', 'supplier'], default: 'customer'
     },
     picture: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Img'

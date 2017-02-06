@@ -8,7 +8,7 @@ import addSchemaHandlers from './_schema.handlers';
 
 export const schema = {
     status: {
-        type: String, required: true, enum: [ `new`, `approved`, `received`, `declined` ], default: `new`
+        type: String, required: true, enum: [ 'new', 'approved', 'received', 'declined' ], default: 'new'
     },
 
     customerFirstName: { type: String, default: '' },
@@ -25,15 +25,15 @@ export const schema = {
     shippingPostOffice: { type: String, default: '' },
 
     user: {
-        type: mongoose.Schema.Types.ObjectId, ref: `User`
+        type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
 
     shippingType: {
-        type: mongoose.Schema.Types.ObjectId, ref: `Shipping`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Shipping'
     },
 
     paymentType: {
-        type: mongoose.Schema.Types.ObjectId, ref: `Payment`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Payment'
     },
 
     products: [
@@ -50,7 +50,7 @@ export const schema = {
     ],
 
     comments: [{
-        type: mongoose.Schema.Types.ObjectId, ref: `Comment`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Comment'
     }],
 
     isDeleted: { type: Boolean, default: false },

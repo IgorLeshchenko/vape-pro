@@ -27,7 +27,7 @@ const uploadImage = (img, file, crop) => {
     const { _id } = img;
 
     if (isNull(cropData)) {
-        return Promise.reject(new Error(`Failed to parse crop data`));
+        return Promise.reject(new Error('Failed to parse crop data'));
     }
 
     return UploadService.uploadImage(_id, file)

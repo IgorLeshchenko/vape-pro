@@ -12,7 +12,7 @@ export const schema = {
         new mongoose.Schema({
             name: { type: String, default: '' },
             type: {
-                type: String, enum: [ `text`, `number`, `boolean` ], default: 'text'
+                type: String, enum: ['text', 'number', 'boolean'], default: 'text'
             },
             value: { type: mongoose.Schema.Types.Mixed, default: '' },
             unit: { type: String, default: '' },

@@ -1,14 +1,14 @@
 'use strict';
 
 // Node imports:
-import { each, isNull, extend, pick } from 'lodash';
+import { isNull, extend, pick } from 'lodash';
 
 // App imports:
 import { castToObjectId, getQueryString } from '../../services/common/query-helpers.service';
 import LoggerService from '../../services/common/logger.service';
 import SupplyModel from '../../models/supply.model';
-import SupplyAggregation from '../../aggregations/supplies.aggregation';
-import ProductsController from '../products/products.controller';
+import SupplyAggregation from '../../aggregations/supplies/supplies.aggregation';
+import SupplyProductsController from './suppliesProducts.controller';
 
 const getDataToUpdate = data => {
     return pick(data, [
@@ -16,37 +16,20 @@ const getDataToUpdate = data => {
     ]);
 };
 
-const updateProductsAfterSupplyComplete = supply => {
-    const { products } = supply;
-    const promises = [];
-
-    each(products, ({ product, amount }) => {
-        promises.push(ProductsController.update(product._id, {
-            amountAvailable: Math.abs(amount),
-            amountBought: Math.abs(amount)
-        }));
-    });
-
-    return Promise.all(promises)
-        .then(() => {
-            return supply;
-        });
-};
-
 export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`, { _id }));
+        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
     }
 
     return SupplyModel.findById(itemId)
         .populate({
-            path: `products.product`,
-            model: `Product`,
+            path: 'products.product',
+            model: 'Product',
             populate: {
-                path: `gallery`,
-                model: `Img`
+                path: 'gallery',
+                model: 'Img'
             }
         })
         .exec()
@@ -106,7 +89,7 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return SupplyModel.findById(itemId)
@@ -129,7 +112,7 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return SupplyModel.findById(itemId)
@@ -153,10 +136,10 @@ export const updateStatusToShipped = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
-    return update(id, { status: `shipped`, shippedAt: Date.now() })
+    return update(id, { status: 'shipped', shippedAt: Date.now() })
         .catch(error => {
             LoggerService.error('Failed to update supply status (shipped)', error, { id });
             return Promise.reject(error);
@@ -167,10 +150,10 @@ export const updateStatusToDeclined = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
-    return update(id, { status: `declined`, declinedAt: Date.now() })
+    return update(id, { status: 'declined', declinedAt: Date.now() })
         .catch(error => {
             LoggerService.error('Failed to update supply status (declined)', error, { id });
             return Promise.reject(error);
@@ -181,12 +164,12 @@ export const updateStatusToReceived = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`, { id }));
+        return Promise.reject(new Error('Failed to cast to ObjectId', { id }));
     }
 
     return SupplyModel.findById(itemId)
-        .then(supply => updateProductsAfterSupplyComplete(supply))
-        .then(supply => update(supply._id, { status: `received`, receivedAt: Date.now() }))
+        .then(supply => SupplyProductsController.updateProductsAmountAfterSupply(supply))
+        .then(supply => update(supply._id, { status: 'received', receivedAt: Date.now() }))
         .catch(error => {
             LoggerService.error('Failed to update supply status (received)', error, { id });
             return Promise.reject(error);

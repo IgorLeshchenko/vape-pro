@@ -8,10 +8,10 @@ import { getHttpLink } from '../../../client/common/helpers/httpLink.helper';
 
 const admins = [
     'igor.leshchenko.mail@gmail.com',
-    'itarakanov.vapepro@gmail.com'
+    // 'itarakanov.vapepro@gmail.com'
 ];
 
-const sendEmail = (sendTo, subject, message, done) => {
+const sendEmail = (sendTo, subject, message) => {
     const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
@@ -26,25 +26,30 @@ const sendEmail = (sendTo, subject, message, done) => {
         html: message
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            done(error);
-        } else {
-            done(null, info.response);
-        }
+    return new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, error => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
     });
 };
 
-export const sendNewOrderToAdmins = (order, done) => {
+export const sendNewOrderToAdmins = order => {
     const { _id } = order;
     const orderLink = getHttpLink(`/mgm/orders/new/${_id}`);
     const subject = `Новый заказ`;
     const message = `На сайте был оставлен новый заказ <a href="${orderLink}">${_id}</a>`;
 
-    sendEmail(admins, subject, message, done);
+    return sendEmail(admins, subject, message)
+        .then(() => {
+            return order;
+        });
 };
 
-export const registerRequestCallback = ({ user, phone }, done) => {
+export const registerRequestCallback = ({ user, phone }) => {
     const subject = `Новый Заказ на CallBack`;
     const message = `
         На сайте был оставлен новый заказ на CallBack <br/> <hr />
@@ -52,5 +57,5 @@ export const registerRequestCallback = ({ user, phone }, done) => {
         Телефон: ${phone} <br/>
     `;
 
-    sendEmail(admins, subject, message, done);
+    return sendEmail(admins, subject, message);
 };

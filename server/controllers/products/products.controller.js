@@ -41,12 +41,12 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`, { _id }));
+        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
     }
 
     return ProductModel.findById(itemId)
-        .populate(`gallery`, `id`)
-        .populate(`type`, `id name`)
+        .populate('gallery', 'id')
+        .populate('type', 'id name')
         .exec()
         .then(product => {
             if (!product) {
@@ -65,7 +65,7 @@ export const getList = data => {
         $or: [{ name: getQueryString(query) }]
     };
     const searchResultFields = [
-        `id`, `name`, `type`, `gallery`, `price`, `amountAvailable`, `amountSold`, `isActive`
+        'id', 'name', 'type', 'gallery', 'price', 'amountAvailable', 'amountSold', 'isActive'
     ].join(' ');
     let searchResultLimits = {};
 
@@ -94,8 +94,8 @@ export const getList = data => {
 
             return ProductModel.find(searchQuery, searchResultFields, searchResultLimits)
                 .sort({ [sortBy]: sortOrder })
-                .populate(`gallery`, `id`)
-                .populate(`type`, `id name`)
+                .populate('gallery', 'id')
+                .populate('type', 'id name')
                 .exec()
                 .then(products => {
                     const pages = Math.floor(productsCount / (+size || 0)) || 0;
@@ -135,7 +135,7 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return isUnique({ _id: itemId, name })
@@ -159,7 +159,7 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return ProductModel.findById(itemId)

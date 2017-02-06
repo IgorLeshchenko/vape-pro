@@ -16,19 +16,19 @@ export const schema = {
     isTopSeller: { type: Boolean, default: false },
 
     type: {
-        type: mongoose.Schema.Types.ObjectId, ref: `ProductType`
+        type: mongoose.Schema.Types.ObjectId, ref: 'ProductType'
     },
 
     directory: {
-        type: mongoose.Schema.Types.ObjectId, ref: `Directory`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Directory'
     },
 
     category: {
-        type: mongoose.Schema.Types.ObjectId, ref: `Category`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Category'
     },
 
     manufacturer: {
-        type: mongoose.Schema.Types.ObjectId, ref: `Manufacturer`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Manufacturer'
     },
 
     picture: {
@@ -36,12 +36,12 @@ export const schema = {
     },
 
     productsName: { type: String },
-    productsValueType: { type: String, enum: [`color`, `text`], default: 'text' },
+    productsValueType: { type: String, enum: ['color', 'text'], default: 'text' },
 
     products: [
         new mongoose.Schema({
             product: {
-                type: mongoose.Schema.Types.ObjectId, ref: `Category`
+                type: mongoose.Schema.Types.ObjectId, ref: 'Category'
             },
             name: { type: String }
         })
@@ -55,11 +55,11 @@ export const schema = {
     ],
 
     comments: [{
-        type: mongoose.Schema.Types.ObjectId, ref: `Comment`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Comment'
     }],
 
     reviews: [{
-        type: mongoose.Schema.Types.ObjectId, ref: `Review`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Review'
     }],
 
     description: { type: String },

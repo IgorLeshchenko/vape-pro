@@ -8,7 +8,7 @@ import addSchemaHandlers from './_schema.handlers';
 
 export const schema = {
     name: { type: String },
-    type: { type: String, enum: [`cash`, `card`], default: 'cash' },
+    type: { type: String, enum: ['cash', 'card'], default: 'cash' },
 
     description: { type: String },
 

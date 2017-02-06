@@ -27,7 +27,7 @@ export default schema => {
         Logger.info('find() took ' + (Date.now() - this.start) + ' millis');
     });
 
-    instance.virtual(`id`).get(function() {
+    instance.virtual('id').get(function() {
         return this._id;
     });
 

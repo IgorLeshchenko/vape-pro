@@ -8,7 +8,7 @@ import addSchemaHandlers from './_schema.handlers';
 
 export const schema = {
     status: {
-        type: String, required: true, enum: [ `new`, `shipped`, `received`, `declined` ], default: 'new'
+        type: String, required: true, enum: ['new', 'shipped', 'received', 'declined'], default: 'new'
     },
 
     products: [

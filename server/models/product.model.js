@@ -8,7 +8,7 @@ import addSchemaHandlers from './_schema.handlers';
 
 export const schema = {
     name: { type: String },
-    type: { type: mongoose.Schema.Types.ObjectId, ref: `ProductType` },
+    type: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductType' },
 
     gallery: [{
         type: mongoose.Schema.Types.ObjectId, ref: 'Img'
@@ -24,7 +24,7 @@ export const schema = {
         new mongoose.Schema({
             name: { type: String, default: '' },
             type: {
-                type: String, enum: [ `text`, `number`, `boolean` ], default: 'text'
+                type: String, enum: ['text', 'number', 'boolean'], default: 'text'
             },
             value: { type: mongoose.Schema.Types.Mixed, default: '' },
             unit: { type: String, default: '' },

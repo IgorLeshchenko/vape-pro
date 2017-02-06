@@ -40,7 +40,7 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`, { _id }));
+        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
     }
 
     return ShippingModel.findById(itemId)
@@ -129,7 +129,7 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return isUnique({ _id: itemId, name })
@@ -153,7 +153,7 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return ShippingModel.findById(itemId)

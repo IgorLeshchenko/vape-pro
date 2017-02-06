@@ -40,7 +40,7 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`, { _id }));
+        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
     }
 
     return ProductTypeModel.findById(itemId)
@@ -61,7 +61,7 @@ export const getList = data => {
         $or: [{ name: getQueryString(query) }]
     };
     const searchResultFields = [
-        `id`, `name`, `characteristics`, `isActive`
+        'id', 'name', 'characteristics', 'isActive'
     ].join(' ');
     let searchResultLimits = {};
 
@@ -126,7 +126,7 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return isUnique({ _id: itemId, name })
@@ -150,7 +150,7 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return ProductTypeModel.findById(itemId)

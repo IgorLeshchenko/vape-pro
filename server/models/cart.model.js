@@ -8,12 +8,12 @@ import addSchemaHandlers from './_schema.handlers';
 
 export const schema = {
     session: { type: String },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: `User` },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     products: [
         new mongoose.Schema({
             amount: { type: Number, default: 0 },
-            container: { type: mongoose.Schema.Types.ObjectId, ref: `Container` },
-            product: { type: mongoose.Schema.Types.ObjectId, ref: `Product` },
+            container: { type: mongoose.Schema.Types.ObjectId, ref: 'Container' },
+            product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
         })
     ],
     createdAt: { type: Date, default: Date.now },

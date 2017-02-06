@@ -8,7 +8,7 @@ import addSchemaHandlers from './_schema.handlers';
 
 export const schema = {
     mark: {
-        type: Number, default: 5, enum: [ 1, 2 , 3, 4, 5 ]
+        type: Number, default: 5, enum: [1, 2, 3, 4, 5]
     },
     user: {
         type: mongoose.Schema.Types.ObjectId, ref: 'User'

@@ -30,8 +30,8 @@ export const get = (user, session) => {
     }
 
     return CartModel.findOne(searchQuery)
-        .populate({ path: `products.container`, model: `Container` })
-        .populate({ path: `products.product`, model: `Product`, populate: { path: `gallery`, model: `Img` } })
+        .populate({ path: 'products.container', model: 'Container' })
+        .populate({ path: 'products.product', model: 'Product', populate: { path: 'gallery', model: 'Img' } })
         .exec()
         .then(cart => {
             if (cart) {

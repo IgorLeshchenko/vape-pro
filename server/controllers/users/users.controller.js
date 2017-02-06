@@ -172,7 +172,7 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error(`Failed to cast to ObjectId`));
+        return Promise.reject(new Error('Failed to cast to ObjectId'));
     }
 
     return UserModel.findById(itemId)

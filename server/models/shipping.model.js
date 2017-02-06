@@ -8,12 +8,12 @@ import addSchemaHandlers from './_schema.handlers';
 
 export const schema = {
     name: { type: String },
-    type: { type: String, enum: [`postOffice`, `customer`, `shop`], default: 'customer' },
+    type: { type: String, enum: ['postOffice', 'customer', 'shop'], default: 'customer' },
 
     price: { type: Number, default: 0 },
 
     payments: [{
-        type: mongoose.Schema.Types.ObjectId, ref: `Payment`
+        type: mongoose.Schema.Types.ObjectId, ref: 'Payment'
     }],
 
     description: { type: String },

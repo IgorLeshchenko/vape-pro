@@ -1,6 +1,15 @@
 {
     "version": "0.0.5",
     "mode": "production",
+    "app": {
+        "admins": [
+            { "name": "Igor", "lastname": "Tarakanov", "phone": "", "email": "" },
+            { "name": "Igor", "lastname": "Leshchenko", "phone": "", "email": "" }
+        ],
+        "shipping": {
+            "freeFromPrice": 750
+        }
+    },
     "server": {
         "host": "localhost",
         "port": 3000,
