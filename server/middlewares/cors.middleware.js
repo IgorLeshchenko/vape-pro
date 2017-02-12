@@ -1,9 +1,9 @@
 'use strict';
 
 // App Imports:
-import configs from '../../../configs/config.json';
+import configs from '../../configs/config.json';
 
-export default (req, res, next) => {
+export const corse = (req, res, next) => {
     const allowedHost = configs.mode === 'production' ? 'http://vape-pro.com.ua' : 'http://localhost:3000';
 
     res.setHeader('Access-Control-Allow-Origin', allowedHost);

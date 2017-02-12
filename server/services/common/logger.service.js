@@ -25,4 +25,4 @@ export default new winston.Logger({
         })
     ],
     exitOnError: false
-});;
+});

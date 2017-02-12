@@ -82,34 +82,34 @@ export const get = ({ searchQuery, page, size, sortBy, sortOrder, filters }) => 
     }
 
     // Sort aggregation items:
+    // Note: path is required for non duplicating results when pagination applied
     switch (sortBy) {
         case 'price-asc':
             aggregation.push({
-                $sort: { 'isInStock': -1, 'price': 1 }
+                $sort: { 'isInStock': -1, 'price': 1, 'path': 1 }
             });
             break;
         case 'price-desc':
             aggregation.push({
-                $sort: { 'isInStock': -1, 'price': -1 }
+                $sort: { 'isInStock': -1, 'price': -1, 'path': 1 }
             });
             break;
         case 'name-asc':
             aggregation.push({
-                $sort: { 'isInStock': -1, 'name': 1 }
+                $sort: { 'isInStock': -1, 'name': 1, 'path': 1 }
             });
             break;
         case 'name-desc':
             aggregation.push({
-                $sort: { 'isInStock': -1, 'name': -1 }
+                $sort: { 'isInStock': -1, 'name': -1, 'path': 1 }
             });
             break;
         case 'date-available':
             aggregation.push({
-                $sort: { 'isInStock': -1, 'createdAt': -1 }
+                $sort: { 'isInStock': -1, 'createdAt': -1, 'path': 1 }
             });
             break;
         default:
-            // Note: path is required for non duplicating results when pagination applied
             aggregation.push({
                 $sort: { 'isInStock': -1, 'index': -1, 'path': 1 }
             });

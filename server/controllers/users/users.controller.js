@@ -29,7 +29,7 @@ const isUnique = ({ _id, email }) => {
     return UserModel.findOne(query)
         .then(user => {
             if (user) {
-                return Promise.reject(new Error('User is not unique'));
+                return Promise.reject({ status: 422, message: 'User is not unique' });
             }
 
             return true;
@@ -40,7 +40,7 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return UserModel.findById(itemId)
@@ -48,10 +48,14 @@ export const getById = _id => {
         .exec()
         .then(user => {
             if (!user) {
-                return Promise.reject(new Error('Failed to find user', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find user' });
             }
 
             return user.toJSON();
+        })
+        .catch(error => {
+            LoggerService.error('Failed to get user by id. Message:', error.message);
+            return Promise.reject(error);
         });
 };
 
@@ -60,7 +64,11 @@ export const getList = data => {
     const { query, status, role } = filters;
     const searchQuery = {
         isDeleted: false,
-        $or: [{ name: getQueryString(query) }]
+        $or: [
+            { firstName: getQueryString(query) },
+            { lastName: getQueryString(query) },
+            { email: getQueryString(query) }
+        ]
     };
     const searchResultFields = [
         'id', 'email', 'firstName', 'lastName', 'phone', 'role', 'picture', 'isActive'
@@ -96,7 +104,8 @@ export const getList = data => {
                 .populate('picture', 'id')
                 .exec()
                 .then(users => {
-                    const pages = Math.floor(usersCount / (+size || 0)) || 0;
+                    const intSize = parseInt(size, 10);
+                    const pages = intSize !== 0 ? Math.floor(usersCount / intSize) : 1;
 
                     return {
                         items: users,
@@ -123,7 +132,7 @@ export const create = data => {
         .then(user => user.save())
         .then(user => getById(user._id))
         .catch(error => {
-            LoggerService.error('Failed to create user', error);
+            LoggerService.error('Failed to create user. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -133,14 +142,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, email })
         .then(() => UserModel.findById(itemId))
         .then(user => {
             if (!user) {
-                return Promise.reject(new Error('Failed to find user'));
+                return Promise.reject({ status: 404, message: 'Failed to find user' });
             }
 
             return extend(user, getDataToUpdate(data));
@@ -148,7 +157,7 @@ export const update = (id, data) => {
         .then(user => user.save())
         .then(user => getById(user._id))
         .catch(error => {
-            LoggerService.error('Failed to update user', error);
+            LoggerService.error('Failed to update user. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -158,12 +167,12 @@ export const updatePassword = (id, data) => {
     const { newPassword } = getDataToUpdate(data);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return update(itemId, { password: newPassword })
         .catch(error => {
-            LoggerService.error('Failed to update user password', error);
+            LoggerService.error('Failed to update user password. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -172,13 +181,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return UserModel.findById(itemId)
         .then(user => {
             if (!user) {
-                return Promise.reject(new Error('Failed to find shipping', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find user' });
             }
 
             return extend(user, {
@@ -187,7 +196,7 @@ export const remove = id => {
         })
         .then(user => user.save())
         .catch(error => {
-            LoggerService.error('Failed to remove user', error, { id });
+            LoggerService.error('Failed to remove user. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -196,17 +205,17 @@ export const comparePasswords = (id, password) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return UserModel.findById(itemId)
         .then(user => {
             if (!user) {
-                return Promise.reject(new Error('Failed to find user', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find user' });
             }
 
             if (!user.validPassword(password)) {
-                return Promise.reject(new Error('Wrong password'));
+                return Promise.reject({ status: 422, message: 'Wrong password' });
             }
 
             return true;

@@ -4,7 +4,7 @@
 import LocalStrategy from 'passport-local';
 
 // App imports:
-import UserModel from '../../models/user.model';
+import UserModel from '../models/user.model';
 
 const strategySetup = {
     usernameField: 'email',
@@ -44,3 +44,6 @@ export default passport => {
         // TODO :: Implement user sign up
     }));
 };
+
+
+

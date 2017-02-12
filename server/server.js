@@ -19,8 +19,8 @@ nodeJSX.install({ extension: '.jsx' });
 // App imports:
 import configs from '../configs/config.json';
 import Logger from './services/common/logger.service';
-import AuthService from './services/common/auth.service';
-import CorsService from './services/common/cors.service';
+import PassportMiddleware from './middlewares/passport.middleware';
+import CorsMiddleware from './middlewares/cors.middleware';
 import ServerRenderService, { isPageRequest } from './services/server-render/serverRender.service'; // eslint-disable-next-line
 import db from './services/db/mongoose';
 import routes from '../client/router/routes';
@@ -30,7 +30,7 @@ import serverRoutes from './routes';
 const port = process.env.PORT || configs.server.port;
 const app = express();
 const appRedisStore = connectRedis(expressSession); // eslint-disable-next-line
-const appAuth = AuthService(passport);
+const appAuth = PassportMiddleware(passport);
 
 global.navigator = global.navigator || {};
 global.navigator.userAgent = global.navigator.userAgent || 'all';
@@ -39,12 +39,12 @@ global.__base = __dirname;
 global.__env = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase() : configs.mode;
 
 if (__env === 'dev') {
-    app.use(CorsService);
+    app.use(CorsMiddleware.corse);
 }
 
-app.use(cookieParser());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }));
+app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(expressValidator());
