@@ -26,6 +26,9 @@ import db from './services/db/mongoose';
 import routes from '../client/router/routes';
 import serverRoutes from './routes';
 
+// TODO :: remove this
+import ImgModel from './models/img.model';
+
 // eShop environment setup:
 const port = process.env.PORT || configs.server.port;
 const app = express();
@@ -42,18 +45,22 @@ if (__env === 'dev') {
     app.use(CorsMiddleware.corse);
 }
 
+app.use(express.static(path.join(__dirname, '../public')));
+app.use(serveFavicon(__dirname + '/../public/images/favicon/favicon.ico'));
+
+app.use(cookieParser());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }));
-app.use(cookieParser());
-app.use(passport.initialize());
-app.use(passport.session());
+
 app.use(expressValidator());
 app.use(expressFileUpload());
 app.use(expressSession({
     secret: 'vape-pro', resave: true, saveUninitialized: true, store: new appRedisStore()
 }));
-app.use(serveFavicon(__dirname + '/../public/images/favicon/favicon.ico'));
-app.use(express.static(path.join(__dirname, '../public')));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(serverRoutes);
 
 app.get('*', (req, res, next) => {
