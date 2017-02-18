@@ -29,7 +29,7 @@ const isUnique = ({ _id, name }) => {
     return ShippingModel.findOne(query)
         .then(shipping => {
             if (shipping) {
-                return Promise.reject(new Error('Shipping is not unique'));
+                return Promise.reject({ status: 422, message: 'Shipping is not unique' });
             }
 
             return true;
@@ -40,7 +40,7 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ShippingModel.findById(itemId)
@@ -48,7 +48,7 @@ export const getById = _id => {
         .exec()
         .then(shipping => {
             if (!shipping) {
-                return Promise.reject(new Error('Failed to find shipping', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find shipping' });
             }
 
             return shipping.toJSON();
@@ -104,7 +104,7 @@ export const getList = data => {
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get shippings list', error);
+            LoggerService.error('Failed to get shippings list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -119,7 +119,7 @@ export const create = data => {
         .then(shipping => shipping.save())
         .then(shipping => getById(shipping._id))
         .catch(error => {
-            LoggerService.error('Failed to create shipping', error);
+            LoggerService.error('Failed to create shipping. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -129,14 +129,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, name })
         .then(() => ShippingModel.findById(itemId))
         .then(shipping => {
             if (!shipping) {
-                return Promise.reject(new Error('Failed to find shipping'));
+                return Promise.reject({ status: 404, message: 'Failed to find shipping' });
             }
 
             return extend(shipping, getDataToUpdate(data));
@@ -144,7 +144,7 @@ export const update = (id, data) => {
         .then(shipping => shipping.save())
         .then(shipping => getById(shipping._id))
         .catch(error => {
-            LoggerService.error('Failed to update shipping', error);
+            LoggerService.error('Failed to update shipping. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -153,13 +153,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ShippingModel.findById(itemId)
         .then(shipping => {
             if (!shipping) {
-                return Promise.reject(new Error('Failed to find shipping', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find shipping' });
             }
 
             return extend(shipping, {
@@ -168,7 +168,7 @@ export const remove = id => {
         })
         .then(shipping => shipping.save())
         .catch(error => {
-            LoggerService.error('Failed to remove shipping', error, { id });
+            LoggerService.error('Failed to remove shipping. Message:', error.message);
             return Promise.reject(error);
         });
 };

@@ -30,7 +30,7 @@ const getShippingPrice = (userId, sessionId, shippingId) => {
         let cartPrice = 0;
 
         if (!cart || !cart.products.length) {
-            return Promise.reject(new Error('Cart has no products'));
+            return Promise.reject({ status: 400, message: 'Cart has no products' });
         }
 
         each(cart.products, cartProductItem => {
@@ -52,7 +52,7 @@ const getProductsFromCart = (userId, sessionId) => {
             const productsToOrder = [];
 
             if (!products.length) {
-                return Promise.reject(new Error('Cart has no products'));
+                return Promise.reject({ status: 400, message: 'Cart has no products' });
             }
 
             each(products, cartProductItem => {
@@ -80,7 +80,7 @@ export const create = (userId, sessionId, data) => {
         .then(orderData => OrdersController.create(orderData))
         .then(order => EmailService.sendNewOrderToAdmins(order))
         .catch(error => {
-            LoggerService.error('Failed to create order (checkout)', error);
+            LoggerService.error('Failed to create order (checkout). Message:', error.message);
             return Promise.reject(error);
         });
 };

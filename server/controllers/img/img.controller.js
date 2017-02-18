@@ -27,7 +27,7 @@ const uploadImage = (img, file, crop) => {
     const { _id } = img;
 
     if (isNull(cropData)) {
-        return Promise.reject(new Error('Failed to parse crop data'));
+        return Promise.reject({ status: 400, message: 'Failed to parse crop data' });
     }
 
     return UploadService.uploadImage(_id, file)
@@ -36,7 +36,7 @@ const uploadImage = (img, file, crop) => {
             return img;
         })
         .catch(error => {
-            LoggerService.error('Failed to upload and crop image', error);
+            LoggerService.error('Failed to upload and crop image. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -47,7 +47,7 @@ export const createImg = (file, crop) => {
     return img.save()
         .then(newImage => uploadImage(newImage, file, crop))
         .catch(error => {
-            LoggerService.error('Failed to create image', error);
+            LoggerService.error('Failed to create image. Message:', error.message);
             return Promise.reject(error);
         });
 };

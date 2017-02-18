@@ -34,7 +34,7 @@ const isUnique = ({ _id, name }) => {
     return ContainerModel.findOne(query)
         .then(container => {
             if (container) {
-                return Promise.reject(new Error('Container is not unique'));
+                return Promise.reject({ status: 422, message: 'Container is not unique' });
             }
 
             return true;
@@ -45,7 +45,7 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ContainerModel.findById(itemId)
@@ -65,7 +65,7 @@ export const getById = _id => {
         .exec()
         .then(container => {
             if (!container) {
-                return Promise.reject(new Error('Failed to find container', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find container' });
             }
 
             return container.toJSON();
@@ -92,7 +92,7 @@ export const getByPath = path => {
         .exec()
         .then(container => {
             if (!container) {
-                return Promise.reject(new Error('Failed to find container', { path }));
+                return Promise.reject({ status: 404, message: 'Failed to find container' });
             }
 
             return container.toJSON();
@@ -109,7 +109,7 @@ export const search = query => {
             };
         })
         .catch(error => {
-            LoggerService.error('Failed to get containers list (search)', error);
+            LoggerService.error('Failed to get containers list (search). Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -143,7 +143,7 @@ export const getList = data => {
             });
         })
         .catch(error => {
-            LoggerService.error('Failed to get containers list', error);
+            LoggerService.error('Failed to get containers list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -158,7 +158,7 @@ export const create = data => {
         .then(container => container.save())
         .then(container => getById(container._id))
         .catch(error => {
-            LoggerService.error('Failed to create container', error);
+            LoggerService.error('Failed to create container. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -168,14 +168,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, name })
         .then(() => ContainerModel.findById(itemId))
         .then(container => {
             if (!container) {
-                return Promise.reject(new Error('Failed to find container'));
+                return Promise.reject({ status: 404, message: 'Failed to find container' });
             }
 
             return extend(container, getDataToUpdate(data));
@@ -183,7 +183,7 @@ export const update = (id, data) => {
         .then(container => container.save())
         .then(container => getById(container._id))
         .catch(error => {
-            LoggerService.error('Failed to update container', error);
+            LoggerService.error('Failed to update container. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -192,13 +192,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ContainerModel.findById(itemId)
         .then(container => {
             if (!container) {
-                return Promise.reject(new Error('Failed to find container', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find container' });
             }
 
             return extend(container, {
@@ -207,7 +207,7 @@ export const remove = id => {
         })
         .then(container => container.save())
         .catch(error => {
-            LoggerService.error('Failed to remove container', error, { id });
+            LoggerService.error('Failed to remove container. Message:', error.message);
             return Promise.reject(error);
         });
 };

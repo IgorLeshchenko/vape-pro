@@ -44,7 +44,7 @@ export const get = (user, session) => {
             return cart.toJSON();
         })
         .catch(error => {
-            LoggerService.error('Failed to get cart', { user, session });
+            LoggerService.error('Failed to get cart. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -54,7 +54,7 @@ export const create = (user, session) => {
 
     return cart.save()
         .catch(error => {
-            LoggerService.error('Failed to create cart', { user, session });
+            LoggerService.error('Failed to create cart. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -72,7 +72,7 @@ export const remove = (user, session) => {
         .then(cart => cart.remove())
         .then(() => get(user, session))
         .catch(error => {
-            LoggerService.error('Failed to remove cart', { user, session });
+            LoggerService.error('Failed to remove cart. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -103,13 +103,13 @@ export const productCreate = (user, session, data) => {
         .then(cart => cart.save())
         .then(() => get(user, session))
         .catch(error => {
-            LoggerService.error('Failed to create product in cart', { user, session, product, container, amount });
+            LoggerService.error('Failed to create product in cart. Message:', error.message);
             return Promise.reject(error);
         });
 };
 
 export const productUpdate = (user, session, data) => {
-    const { product, container, amount } = data;
+    const { product, amount } = data;
 
     return get(user, session)
         .then(cart => {
@@ -128,13 +128,13 @@ export const productUpdate = (user, session, data) => {
         .then(cart => cart.save())
         .then(() => get(user, session))
         .catch(error => {
-            LoggerService.error('Failed to update product in cart', { user, session, product, container, amount });
+            LoggerService.error('Failed to update product in cart. Message:', error.message);
             return Promise.reject(error);
         });
 };
 
 export const productRemove = (user, session, data) => {
-    const { product, container, amount } = data;
+    const { product } = data;
 
     return get(user, session)
         .then(cart => {
@@ -152,7 +152,7 @@ export const productRemove = (user, session, data) => {
         .then(cart => cart.save())
         .then(() => get(user, session))
         .catch(error => {
-            LoggerService.error('Failed to remove product in cart', { user, session, product, container, amount });
+            LoggerService.error('Failed to remove product in cart. Message:', error.message);
             return Promise.reject(error);
         });
 };

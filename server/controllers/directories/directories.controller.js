@@ -29,7 +29,7 @@ const isUnique = ({ _id, name }) => {
     return DirectoryModel.findOne(query)
         .then(directory => {
             if (directory) {
-                return Promise.reject(new Error('Directory is not unique'));
+                return Promise.reject({ status: 422, message: 'Directory is not unique' });
             }
 
             return true;
@@ -40,13 +40,13 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return DirectoryModel.findById(itemId)
         .then(directory => {
             if (!directory) {
-                return Promise.reject(new Error('Failed to find directory', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find directory' });
             }
 
             return directory.toJSON();
@@ -59,7 +59,7 @@ export const getByPath = path => {
     return DirectoryModel.findOne({ path: safePath })
         .then(directory => {
             if (!directory) {
-                return Promise.reject(new Error('Failed to find directory', { path }));
+                return Promise.reject({ status: 404, message: 'Failed to find directory' });
             }
 
             return directory.toJSON();
@@ -114,7 +114,7 @@ export const getList = data => {
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get directories list', error);
+            LoggerService.error('Failed to get directories list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -129,7 +129,7 @@ export const create = data => {
         .then(directory => directory.save())
         .then(directory => getById(directory._id))
         .catch(error => {
-            LoggerService.error('Failed to create directory', error);
+            LoggerService.error('Failed to create directory. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -139,14 +139,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, name })
         .then(() => DirectoryModel.findById(itemId))
         .then(directory => {
             if (!directory) {
-                return Promise.reject(new Error('Failed to find directory'));
+                return Promise.reject({ status: 404, message: 'Failed to find directory' });
             }
 
             return extend(directory, getDataToUpdate(data));
@@ -154,7 +154,7 @@ export const update = (id, data) => {
         .then(directory => directory.save())
         .then(directory => getById(directory._id))
         .catch(error => {
-            LoggerService.error('Failed to update directory', error);
+            LoggerService.error('Failed to update directory. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -163,13 +163,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return DirectoryModel.findById(itemId)
         .then(directory => {
             if (!directory) {
-                return Promise.reject(new Error('Failed to find directory', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find directory' });
             }
 
             return extend(directory, {
@@ -178,7 +178,7 @@ export const remove = id => {
         })
         .then(directory => directory.save())
         .catch(error => {
-            LoggerService.error('Failed to remove directory', error, { id });
+            LoggerService.error('Failed to remove directory. Message:', error.message);
             return Promise.reject(error);
         });
 };

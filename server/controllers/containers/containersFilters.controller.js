@@ -72,7 +72,7 @@ export const getListOfManufacturers = filters => {
                 .exec();
         })
         .catch(error => {
-            LoggerService.error('Failed to get manufacturers filters list', error);
+            LoggerService.error('Failed to get manufacturers filters list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -100,7 +100,7 @@ export const getPricesRange = filters => {
             return { minPrice, maxPrice };
         })
         .catch(error => {
-            LoggerService.error('Failed to get prices range', error);
+            LoggerService.error('Failed to get prices range. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -117,7 +117,7 @@ export const getContainersCount = (searchQuery, filters) => {
             return containers[0].count;
         })
         .catch(error => {
-            LoggerService.error('Failed to get containers count', error);
+            LoggerService.error('Failed to get containers count. Message:', error.message);
             return Promise.reject(error);
         });
 };

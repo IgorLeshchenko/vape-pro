@@ -29,7 +29,7 @@ const isUnique = ({ _id, name }) => {
     return ProductTypeModel.findOne(query)
         .then(productType => {
             if (productType) {
-                return Promise.reject(new Error('Product Type is not unique'));
+                return Promise.reject({ status: 422, message: 'Product Type is not unique' });
             }
 
             return true;
@@ -40,13 +40,13 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ProductTypeModel.findById(itemId)
         .then(productType => {
             if (!productType) {
-                return Promise.reject(new Error('Failed to find product type', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find product type' });
             }
 
             return productType.toJSON();
@@ -101,7 +101,7 @@ export const getList = data => {
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get products types list', error);
+            LoggerService.error('Failed to get products types list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -116,7 +116,7 @@ export const create = data => {
         .then(productType => productType.save())
         .then(productType => getById(productType._id))
         .catch(error => {
-            LoggerService.error('Failed to create product type', error);
+            LoggerService.error('Failed to create product type. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -126,14 +126,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, name })
         .then(() => ProductTypeModel.findById(itemId))
         .then(productType => {
             if (!productType) {
-                return Promise.reject(new Error('Failed to find product type'));
+                return Promise.reject({ status: 404, message: 'Failed to find product type' });
             }
 
             return extend(productType, getDataToUpdate(data));
@@ -141,7 +141,7 @@ export const update = (id, data) => {
         .then(productType => productType.save())
         .then(productType => getById(productType._id))
         .catch(error => {
-            LoggerService.error('Failed to update product type', error);
+            LoggerService.error('Failed to update product type. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -150,13 +150,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ProductTypeModel.findById(itemId)
         .then(productType => {
             if (!productType) {
-                return Promise.reject(new Error('Failed to find product type', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find product type' });
             }
 
             return extend(productType, {
@@ -165,7 +165,7 @@ export const remove = id => {
         })
         .then(productType => productType.save())
         .catch(error => {
-            LoggerService.error('Failed to remove product type', error, { id });
+            LoggerService.error('Failed to remove product type. Message:', error.message);
             return Promise.reject(error);
         });
 };

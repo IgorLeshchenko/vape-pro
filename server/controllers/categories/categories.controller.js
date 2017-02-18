@@ -28,7 +28,7 @@ const isUnique = ({ _id, name, directory = {} }) => {
     return CategoryModel.findOne(query)
         .then(category => {
             if (category) {
-                return Promise.reject(new Error('Category is not unique'));
+                return Promise.reject({ status: 422, message: 'Category is not unique' });
             }
 
             return true;
@@ -39,7 +39,7 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return CategoryModel.findById(itemId)
@@ -48,7 +48,7 @@ export const getById = _id => {
         .exec()
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find category' });
             }
 
             return category.toJSON();
@@ -62,7 +62,7 @@ export const getByPath = path => {
         .exec()
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category', { path }));
+                return Promise.reject({ status: 404, message: 'Failed to find category' });
             }
 
             return category.toJSON();
@@ -123,7 +123,7 @@ export const getList = data => {
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get categories list', error);
+            LoggerService.error('Failed to get categories list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -138,7 +138,7 @@ export const create = data => {
         .then(category => category.save())
         .then(category => getById(category._id))
         .catch(error => {
-            LoggerService.error('Failed to create category', error);
+            LoggerService.error('Failed to create category. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -148,14 +148,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, name, directory })
         .then(() => CategoryModel.findById(itemId))
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category'));
+                return Promise.reject({ status: 404, message: 'Failed to find category' });
             }
 
             return extend(category, getDataToUpdate(data));
@@ -163,7 +163,7 @@ export const update = (id, data) => {
         .then(category => category.save())
         .then(category => getById(category._id))
         .catch(error => {
-            LoggerService.error('Failed to update category', error);
+            LoggerService.error('Failed to update category. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -172,13 +172,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return CategoryModel.findById(itemId)
         .then(category => {
             if (!category) {
-                return Promise.reject(new Error('Failed to find category', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find category' });
             }
 
             return extend(category, {
@@ -187,7 +187,7 @@ export const remove = id => {
         })
         .then(category => category.save())
         .catch(error => {
-            LoggerService.error('Failed to remove category', error, { id });
+            LoggerService.error('Failed to remove category. Message:', error.message);
             return Promise.reject(error);
         });
 };

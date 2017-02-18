@@ -58,7 +58,7 @@ export const unBookProducts = order => {
                     return order;
                 })
                 .catch(error => {
-                    LoggerService.error('Failed to update product amountAvailable', error, { id });
+                    LoggerService.error('Failed to update product amountAvailable. Message:', error.message);
                     return Promise.reject(error);
                 })
         );
@@ -86,7 +86,7 @@ export const setProductsAsSold = order => {
                     return order;
                 })
                 .catch(error => {
-                    LoggerService.error('Failed to update product amountSold', error, { id });
+                    LoggerService.error('Failed to update product amountSold. Message:', error.message);
                     return Promise.reject(error);
                 })
         );

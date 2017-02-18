@@ -30,7 +30,7 @@ const isUnique = ({ _id, name }) => {
     return ManufacturerModel.findOne(query)
         .then(manufacturer => {
             if (manufacturer) {
-                return Promise.reject(new Error('Manufacturer is not unique'));
+                return Promise.reject({ status: 422, message: 'Manufacturer is not unique' });
             }
 
             return true;
@@ -41,7 +41,7 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ManufacturerModel.findById(itemId)
@@ -49,7 +49,7 @@ export const getById = _id => {
         .exec()
         .then(manufacturer => {
             if (!manufacturer) {
-                return Promise.reject(new Error('Failed to find manufacturer', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find manufacturer' });
             }
 
             return manufacturer.toJSON();
@@ -64,7 +64,7 @@ export const getByPath = path => {
         .exec()
         .then(manufacturer => {
             if (!manufacturer) {
-                return Promise.reject(new Error('Failed to find manufacturer', { path }));
+                return Promise.reject({ status: 404, message: 'Failed to find manufacturer' });
             }
 
             return manufacturer.toJSON();
@@ -120,7 +120,7 @@ export const getList = data => {
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get manufacturers list', error);
+            LoggerService.error('Failed to get manufacturers list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -135,7 +135,7 @@ export const create = data => {
         .then(manufacturer => manufacturer.save())
         .then(manufacturer => getById(manufacturer._id))
         .catch(error => {
-            LoggerService.error('Failed to create manufacturer', error);
+            LoggerService.error('Failed to create manufacturer. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -145,14 +145,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, name })
         .then(() => ManufacturerModel.findById(itemId))
         .then(manufacturer => {
             if (!manufacturer) {
-                return Promise.reject(new Error('Failed to find manufacturer'));
+                return Promise.reject({ status: 404, message: 'Failed to find manufacturer' });
             }
 
             return extend(manufacturer, getDataToUpdate(data));
@@ -160,7 +160,7 @@ export const update = (id, data) => {
         .then(manufacturer => manufacturer.save())
         .then(manufacturer => getById(manufacturer._id))
         .catch(error => {
-            LoggerService.error('Failed to update manufacturer', error);
+            LoggerService.error('Failed to update manufacturer. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -169,13 +169,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId'));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return ManufacturerModel.findById(itemId)
         .then(manufacturer => {
             if (!manufacturer) {
-                return Promise.reject(new Error('Failed to find manufacturer', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find manufacturer' });
             }
 
             return extend(manufacturer, {
@@ -184,7 +184,7 @@ export const remove = id => {
         })
         .then(manufacturer => manufacturer.save())
         .catch(error => {
-            LoggerService.error('Failed to remove manufacturer', error, { id });
+            LoggerService.error('Failed to remove manufacturer. Message:', error.message);
             return Promise.reject(error);
         });
 };

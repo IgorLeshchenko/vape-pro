@@ -28,7 +28,7 @@ const isUnique = ({ _id, name }) => {
     return PaymentModel.findOne(query)
         .then(payment => {
             if (payment) {
-                return Promise.reject(new Error('Payment name is not unique'));
+                return Promise.reject({ status: 422, message: 'Payment is not unique' });
             }
 
             return true;
@@ -39,13 +39,13 @@ export const getById = _id => {
     const itemId = castToObjectId(_id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { _id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return PaymentModel.findById(itemId)
         .then(payment => {
             if (!payment) {
-                return Promise.reject(new Error('Failed to find payment', { _id }));
+                return Promise.reject({ status: 404, message: 'Failed to find payment' });
             }
 
             return payment.toJSON();
@@ -100,7 +100,7 @@ export const getList = data => {
                 });
         })
         .catch(error => {
-            LoggerService.error('Failed to get payments list', error);
+            LoggerService.error('Failed to get payments list. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -115,7 +115,7 @@ export const create = data => {
         .then(payment => payment.save())
         .then(payment => getById(payment._id))
         .catch(error => {
-            LoggerService.error('Failed to create payment', error);
+            LoggerService.error('Failed to create payment. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -125,14 +125,14 @@ export const update = (id, data) => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return isUnique({ _id: itemId, name })
         .then(() => PaymentModel.findById(itemId))
         .then(payment => {
             if (!payment) {
-                return Promise.reject(new Error('Failed to find payment'));
+                return Promise.reject({ status: 404, message: 'Failed to find payment' });
             }
 
             return extend(payment, getDataToUpdate(data));
@@ -140,7 +140,7 @@ export const update = (id, data) => {
         .then(payment => payment.save())
         .then(payment => getById(payment._id))
         .catch(error => {
-            LoggerService.error('Failed to update payment', error);
+            LoggerService.error('Failed to update payment. Message:', error.message);
             return Promise.reject(error);
         });
 };
@@ -149,13 +149,13 @@ export const remove = id => {
     const itemId = castToObjectId(id);
 
     if (isNull(itemId)) {
-        return Promise.reject(new Error('Failed to cast to ObjectId', { id }));
+        return Promise.reject({ status: 400, message: 'Failed to cast to ObjectId' });
     }
 
     return PaymentModel.findById(itemId)
         .then(payment => {
             if (!payment) {
-                return Promise.reject(new Error('Failed to find payment', { id }));
+                return Promise.reject({ status: 404, message: 'Failed to find payment' });
             }
 
             return extend(payment, {
@@ -164,7 +164,7 @@ export const remove = id => {
         })
         .then(payment => payment.save())
         .catch(error => {
-            LoggerService.error('Failed to remove payment', error);
+            LoggerService.error('Failed to remove payment. Message:', error.message);
             return Promise.reject(error);
         });
 };
