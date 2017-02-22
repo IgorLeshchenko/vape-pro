@@ -38,12 +38,11 @@ const getFullPageHTML = (html, state) => {
 };
 
 export default (req, renderProps) => {
-    const { components, params } = renderProps;
     const store = compose(
         applyMiddleware(thunkMiddleware)
     )(createStore)(combineReducers);
 
-    return fetchComponentsData(store.dispatch, components, params)
+    return fetchComponentsData(store.dispatch, renderProps)
         .then(() => {
             const initView = renderToString((
                 <Provider store={store}>

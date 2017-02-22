@@ -4,10 +4,10 @@
 import { combineReducers } from 'redux';
 
 // App imports:
-import user from './user/user.reducer';
-import users from './users/users.reducer';
+import entities from './entities/entities.reducer';
+import lists from './lists/lists.reducer';
 
 export default combineReducers({
-    user,
-    users
+    entities,
+    lists
 });

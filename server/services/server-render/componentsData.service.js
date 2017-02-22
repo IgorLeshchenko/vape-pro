@@ -3,7 +3,8 @@
 // Third Party imports:
 import { each, keys } from 'lodash';
 
-export const fetchComponentsData = (dispatch, components, params) => {
+export const fetchComponentsData = (dispatch, renderProps) => {
+    const { components, params, req } = renderProps;
     const promises = [];
 
     each(components, component => {
@@ -13,7 +14,7 @@ export const fetchComponentsData = (dispatch, components, params) => {
             const hasFetchMethod = component[key].hasOwnProperty('serverFetch');
 
             if (hasFetchMethod) {
-                promises.push(component[key].serverFetch(dispatch, params));
+                promises.push(component[key].serverFetch(dispatch, params, req));
             }
         });
     });

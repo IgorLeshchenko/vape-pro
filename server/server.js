@@ -81,7 +81,7 @@ app.get('*', (req, res, next) => {
             return res.status(404).send('Not found');
         }
 
-        ServerRenderService(req, renderProps)
+        ServerRenderService(req, { ...renderProps, req })
             .then(page => res.status(200).send(page))
             .catch(err => res.status(500).end(err.message));
     });
